@@ -1,0 +1,82 @@
+name: sst_admin
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '^3.7.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Firebase (todas compatibles)
+  firebase_core: ^3.12.1
+  firebase_app_check: ^0.3.2+4
+  firebase_auth: ^5.5.1
+  cloud_firestore: ^5.6.5
+  firebase_storage: ^12.4.0
+  firebase_analytics: ^11.4.0
+  firebase_performance: ^0.10.0+6
+
+  # Otras dependencias
+  device_info_plus: ^9.1.2
+  percent_indicator: ^4.2.2
+  http: ^1.2.0
+  table_calendar: ^3.0.9
+  provider: ^6.1.2
+  shared_preferences: ^2.1.1
+  url_launcher: ^6.1.10
+  universal_io: ^2.0.4
+  intl: ^0.20.2
+  dio: ^5.8.0+1
+  flutter_localizations:
+    sdk: flutter
+  video_player: ^2.8.3
+  lottie: ^3.2.0
+  fl_chart: ^0.66.2
+  sensors_plus: ^3.0.0
+  image_picker: ^1.0.7
+  image_picker_web: ^3.1.1
+  flutter_secure_storage: ^9.0.0
+  webview_flutter: ^4.7.0
+  webview_flutter_web: ^0.2.2+4
+  web: ^1.0.0 # Compatible con firebase_core
+  js: ^0.6.7  # Agregar esta línea
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  change_app_package_name: ^1.4.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/imagenes/image_2.png
+    - assets/imagenes/logo_emas.png
+    - assets/imagenes/LOGOECOBREACK.png
+    # Menu
+    - assets/imagenes/menu/calendario.png
+    - assets/imagenes/menu/actividades.png
+    - assets/imagenes/menu/activities_realizadas.png
+    - assets/imagenes/menu/usuario.png
+    - assets/imagenes/menu/exit.png
+    - assets/imagenes/menu/ajustes.png
+    # Icons
+    - assets/imagenes/icons/salir.png
+    - assets/imagenes/icons/info.png
+    - assets/imagenes/icons/masculino.png
+    - assets/imagenes/icons/otro.png
+    - assets/imagenes/icons/femenino.png
+    - assets/animaciones/movimiento.json
+    - assets/animaciones/detectando.json
+    - assets/animaciones/detectado_exito.json
+    - assets/animaciones/fallo.json
+
+  fonts:
+    - family: HelveticaRounded
+      fonts:
+        - asset: assets/fonts/HelveticaRoundedBold.otf
