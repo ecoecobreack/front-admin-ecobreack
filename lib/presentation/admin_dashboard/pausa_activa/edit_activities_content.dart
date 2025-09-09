@@ -32,9 +32,9 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
       });
 
       final activities = await ActivityService.getActivities();
-      
+
       if (!mounted) return;
-      
+
       setState(() {
         _activities = activities;
         _isLoading = false;
@@ -56,24 +56,27 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
 
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación múltiple'),
-        content: Text('¿Está seguro de eliminar ${_selectedActivities.length} actividades?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar eliminación múltiple'),
+            content: Text(
+              '¿Está seguro de eliminar ${_selectedActivities.length} actividades?',
             ),
-            child: const Text('Eliminar'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Eliminar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirm == true) {
@@ -81,7 +84,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
         for (final activityId in _selectedActivities) {
           await ActivityService.deleteActivity(activityId);
         }
-        
+
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -110,9 +113,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF0067AC),
-        ),
+        child: CircularProgressIndicator(color: Color(0xFF0067AC)),
       );
     }
 
@@ -121,25 +122,26 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              color: Colors.red,
-              size: 48,
-            ),
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
             const SizedBox(height: 16),
-            Text(
-              _error,
-              style: const TextStyle(color: Colors.red),
-            ),
+            Text(_error, style: const TextStyle(color: Colors.red)),
           ],
         ),
       );
     }
 
-    final filteredActivities = _activities.where((activity) =>
-      activity['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      activity['category'].toString().toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    final filteredActivities =
+        _activities
+            .where(
+              (activity) =>
+                  activity['nombre'].toString().toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ) ||
+                  activity['category'].toString().toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ),
+            )
+            .toList();
 
     return Container(
       decoration: BoxDecoration(
@@ -190,9 +192,10 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                                 setState(() {
                                   _selectAll = value ?? false;
                                   if (_selectAll) {
-                                    _selectedActivities = _activities
-                                        .map((e) => e['id'] as String)
-                                        .toSet();
+                                    _selectedActivities =
+                                        _activities
+                                            .map((e) => e['id'] as String)
+                                            .toSet();
                                   } else {
                                     _selectedActivities.clear();
                                   }
@@ -216,10 +219,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [
-                              Colors.red.shade400,
-                              Colors.red.shade500,
-                            ],
+                            colors: [Colors.red.shade400, Colors.red.shade500],
                           ),
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
@@ -233,7 +233,9 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                         child: ElevatedButton.icon(
                           onPressed: _deleteSelectedActivities,
                           icon: const Icon(Icons.delete_outline, size: 20),
-                          label: Text('Eliminar (${_selectedActivities.length})'),
+                          label: Text(
+                            'Eliminar (${_selectedActivities.length})',
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             foregroundColor: Colors.white,
@@ -261,7 +263,8 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                         ],
                       ),
                       child: TextField(
-                        onChanged: (value) => setState(() => _searchQuery = value),
+                        onChanged:
+                            (value) => setState(() => _searchQuery = value),
                         decoration: InputDecoration(
                           hintText: 'Buscar actividad...',
                           hintStyle: TextStyle(
@@ -287,23 +290,27 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: filteredActivities.isEmpty
-                ? _buildEmptyState()
-                : GridView.builder(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 1.5,
-                      crossAxisSpacing: 24,
-                      mainAxisSpacing: 24,
+            child:
+                filteredActivities.isEmpty
+                    ? _buildEmptyState()
+                    : GridView.builder(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            childAspectRatio: 1.5,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                          ),
+                      itemCount: filteredActivities.length,
+                      itemBuilder: (context, index) {
+                        final activity = filteredActivities[index];
+                        final isSelected = _selectedActivities.contains(
+                          activity['id'],
+                        );
+                        return _buildActivityCard(activity, isSelected);
+                      },
                     ),
-                    itemCount: filteredActivities.length,
-                    itemBuilder: (context, index) {
-                      final activity = filteredActivities[index];
-                      final isSelected = _selectedActivities.contains(activity['id']);
-                      return _buildActivityCard(activity, isSelected);
-                    },
-                  ),
           ),
         ],
       ),
@@ -332,10 +339,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
           const SizedBox(height: 8),
           Text(
             'Crea una nueva actividad para empezar',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
         ],
       ),
@@ -345,46 +349,32 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   Widget _buildActivityCard(Map<String, dynamic> activity, bool isSelected) {
     // Definir colores por categoría
     Color getCardColor(String category) {
-      switch (category.toLowerCase()) {
-        case 'visual':
-        case 'tren superior':
-          return const Color(0xFF0067AC).withAlpha(26); // Cambiado de withOpacity(0.1)
-        case 'auditiva':
-        case 'tren inferior':
-          return const Color(0xFFE53935).withAlpha(26); // Cambiado de withOpacity(0.1)
-        case 'cognitiva':
-        case 'movilidad articular':
-          return const Color(0xFF4CAF50).withAlpha(26); // Cambiado de withOpacity(0.1)
-        default:
-          return const Color(0xFF9C27B0).withAlpha(26); // Cambiado de withOpacity(0.1)
-      }
+      return const Color(0xFF4CAF50); // Cambiado de withOpacity(0.1)
     }
 
-    Color getTextColor(String category) {
-      switch (category.toLowerCase()) {
-        case 'visual':
-        case 'tren superior':
-          return const Color(0xFF0067AC); // Azul
-        case 'auditiva':
-        case 'tren inferior':
-          return const Color(0xFFE53935); // Rojo
-        case 'cognitiva':
-        case 'movilidad articular':
-          return const Color(0xFF4CAF50); // Verde
-        default:
-          return const Color(0xFF9C27B0); // Morado
-      }
+    Color getTextColor(String id) {
+      return const Color.fromARGB(255, 255, 255, 255);
     }
 
-    final cardColor = getCardColor(activity['category']);
-    final textColor = getTextColor(activity['category']);
+    final cardColor = getCardColor(activity['id']);
+    final textColor = getTextColor(activity['id']);
+    final sensorEnabled =
+        activity['sensorEnabled'] is bool
+            ? activity['sensorEnabled']
+            : activity['sensorEnabled'].toString().toLowerCase() == 'true';
 
     return Container(
       decoration: BoxDecoration(
-        color: isSelected ? cardColor.withAlpha(51) : Colors.white, // Cambiado de withOpacity(0.2)
+        color:
+            isSelected
+                ? cardColor.withAlpha(51)
+                : Colors.white, // Cambiado de withOpacity(0.2)
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isSelected ? textColor : Colors.grey.withAlpha(51), // Cambiado de withOpacity(0.2)
+          color:
+              isSelected
+                  ? textColor
+                  : Colors.grey.withAlpha(51), // Cambiado de withOpacity(0.2)
           width: isSelected ? 2 : 1,
         ),
         boxShadow: [
@@ -411,7 +401,9 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: cardColor.withAlpha(51), // Cambiado de withOpacity(0.2)
+                      color: cardColor.withAlpha(
+                        51,
+                      ), // Cambiado de withOpacity(0.2)
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -430,9 +422,9 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
-                              _getCategoryIcon(activity['category']),
+                              _getCategoryIcon(activity['icono']),
                               color: textColor,
-                              size: 24,
+                              size: 38,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -441,11 +433,16 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  activity['name'],
+                                  activity['nombre'],
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: textColor,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      143,
+                                      143,
+                                      143,
+                                    ),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -458,10 +455,12 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                                   ),
                                   decoration: BoxDecoration(
                                     color: cardColor,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(5),
                                   ),
                                   child: Text(
-                                    activity['category'],
+                                    sensorEnabled
+                                        ? 'Requiere sensor'
+                                        : 'Sin sensor',
                                     style: TextStyle(
                                       color: textColor,
                                       fontSize: 12,
@@ -474,6 +473,71 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                           ),
                         ],
                       ),
+                      SizedBox(
+                        height: 18,
+                      ), // Espacio entre el row superior y la descripción
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            activity['descripcion'] ?? '',
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 143, 143, 143),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Mostrar pasos si existen
+                      if (activity['pasos'] != null &&
+                          activity['pasos'] is List &&
+                          (activity['pasos'] as List).isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15.0, left: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Pasos:',
+                                style: TextStyle(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    143,
+                                    143,
+                                    143,
+                                  ),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              ...List<Widget>.from(
+                                (activity['pasos'] as List).map(
+                                  (step) => Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 8.0,
+                                      top: 4.0,
+                                    ),
+                                    child: Text(
+                                      '- $step',
+                                      style: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          143,
+                                          143,
+                                          143,
+                                        ),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       const Spacer(),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -488,7 +552,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              '${activity['minTime']}s - ${activity['maxTime']}s',
+                              ' ${activity['duracion']}s',
                               style: TextStyle(
                                 color: textColor,
                                 fontWeight: FontWeight.w500,
@@ -501,7 +565,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                               IconButton(
                                 icon: const Icon(Icons.edit, size: 20),
                                 onPressed: () => _editActivity(activity),
-                                color: textColor,
+                                color: cardColor,
                               ),
                               IconButton(
                                 icon: const Icon(Icons.delete, size: 20),
@@ -528,7 +592,8 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                           } else {
                             _selectedActivities.remove(activity['id']);
                           }
-                          _selectAll = _selectedActivities.length == _activities.length;
+                          _selectAll =
+                              _selectedActivities.length == _activities.length;
                         });
                       },
                       activeColor: textColor,
@@ -542,24 +607,26 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
     );
   }
 
-  IconData _getCategoryIcon(String category) {
-    switch (category) {
-      case 'Visual':
+  IconData _getCategoryIcon(String iconString) {
+    // El string viene como "Icons.psychology", extraemos el nombre del icono
+    final iconName =
+        iconString.replaceAll('"', '').replaceAll('Icons.', '').toLowerCase();
+
+    switch (iconName) {
+      case 'visibility':
         return Icons.visibility;
-      case 'Auditiva':
+      case 'hearing':
         return Icons.hearing;
-      case 'Cognitiva':
+      case 'psychology':
         return Icons.psychology;
-      case 'Tren Superior':
+      case 'fitness_center':
+        return Icons.fitness_center;
+      case 'directions_run':
+        return Icons.directions_run;
+      case 'accessibility_new':
         return Icons.accessibility_new;
-      case 'Tren Inferior':
-        return Icons.directions_walk;
-      case 'Movilidad Articular':
-        return Icons.self_improvement;
-      case 'Estiramientos Generales':
-        return Icons.accessibility;
       default:
-        return Icons.category;
+        return Icons.extension;
     }
   }
 
@@ -577,21 +644,24 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   Future<void> _deleteActivity(Map<String, dynamic> activity) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar eliminación'),
-        content: Text('¿Está seguro de eliminar la actividad "${activity['name']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar eliminación'),
+            content: Text(
+              '¿Está seguro de eliminar la actividad "${activity['nombre']}"?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Eliminar'),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Eliminar'),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {

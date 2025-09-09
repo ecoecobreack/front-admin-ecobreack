@@ -973,11 +973,16 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
             ),
       );
 
+      debugPrint('🔄 Diálogo cerrado: $result');
+
       if (result != null && mounted) {
+        // Filtrar usuarios con id vacío
+        final filteredResult = result.where((u) => u.id.isNotEmpty).toList();
+
         try {
           final updatedGroup = await _groupService.updateGroupMembers(
             group.id,
-            result,
+            filteredResult,
           );
 
           if (!mounted) return;
@@ -989,9 +994,11 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
             }
           });
 
-          debugPrint('✅ Grupo actualizado con ${result.length} miembros');
           debugPrint(
-            '📊 IDs de miembros: ${result.map((u) => u.id).join(", ")}',
+            '✅ Grupo actualizado con ${filteredResult.length} miembros',
+          );
+          debugPrint(
+            '📊 IDs de miembros: ${filteredResult.map((u) => u.id).join(" ,")}',
           );
         } catch (e) {
           if (!mounted) return;

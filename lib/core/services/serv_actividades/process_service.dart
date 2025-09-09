@@ -24,9 +24,6 @@ class ProcessService {
         'processName': processName,
         'pausePlanIds': pausePlanIds,
         'startDate': startUtc.toIso8601String(),
-        'endDate': endUtc.toIso8601String(),
-        if (notifications != null && notifications.isNotEmpty)
-          'notifications': notifications,
       };
 
       debugPrint('📦 Datos a enviar: $processData');

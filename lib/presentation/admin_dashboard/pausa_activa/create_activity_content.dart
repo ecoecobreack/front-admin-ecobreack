@@ -15,10 +15,9 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
   // Declaración de controladores
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _minTimeController = TextEditingController();
   final TextEditingController _maxTimeController = TextEditingController();
   final TextEditingController _videoLinkController = TextEditingController();
-  
+
   // Variables de estado
   String? _selectedCategory;
   bool _showSensorSwitch = false;
@@ -26,25 +25,47 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
   bool _isVideoLoading = false;
   Map<String, dynamic>? _selectedVideo;
   final List<String> _activityLog = [];
+  final TextEditingController _stepController = TextEditingController();
+  final List<String> _steps = [];
 
   @override
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _minTimeController.dispose();
     _maxTimeController.dispose();
     _videoLinkController.dispose();
+    _stepController.dispose();
     super.dispose();
+  }
+
+  String _getIconString(String? categoria) {
+    switch (categoria) {
+      case 'Visibilidad':
+        return 'Icons.visibility';
+      case 'Audición':
+        return 'Icons.hearing';
+      case 'Psicología':
+        return 'Icons.psychology';
+      case 'Accesibilidad':
+        return 'Icons.accessibility_new';
+      case 'Movilidad':
+        return 'Icons.directions_walk';
+      case 'Mejora Personal':
+        return 'Icons.self_improvement';
+      default:
+        return 'Icons.help_outline';
+    }
   }
 
   Future<void> _showVideoSelector() async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
-      builder: (context) => VideoSelectorDialog(
-        onVideoSelected: (video) {
-          Navigator.pop(context, video);
-        },
-      ),
+      builder:
+          (context) => VideoSelectorDialog(
+            onVideoSelected: (video) {
+              Navigator.pop(context, video);
+            },
+          ),
     );
 
     if (result != null && mounted) {
@@ -77,26 +98,14 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
   }
 
   Future<void> _validateTimeInputs() async {
-    final minTime = int.tryParse(_minTimeController.text);
     final maxTime = int.tryParse(_maxTimeController.text);
 
-    if (minTime == null || maxTime == null) {
-      throw Exception('Los tiempos deben ser números válidos');
+    if (maxTime! > 300) {
+      // 5 minutos máximo
+      throw Exception(
+        'El tiempo máximo no puede exceder los 5 minutos (300 segundos)',
+      );
     }
-
-    // Nuevos límites de tiempo
-    if (minTime < 10) {
-      throw Exception('El tiempo mínimo debe ser al menos 10 segundos');
-    }
-
-    if (maxTime > 300) { // 5 minutos máximo
-      throw Exception('El tiempo máximo no puede exceder los 5 minutos (300 segundos)');
-    }
-
-    if (maxTime <= minTime) {
-      throw Exception('El tiempo máximo debe ser mayor al tiempo mínimo');
-    }
-    
     return Future.value();
   }
 
@@ -108,7 +117,6 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
       if (_videoLinkController.text.isEmpty ||
           _nameController.text.isEmpty ||
           _descriptionController.text.isEmpty ||
-          _minTimeController.text.isEmpty ||
           _maxTimeController.text.isEmpty ||
           _selectedCategory == null) {
         if (!mounted) return;
@@ -123,7 +131,9 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
 
       // Validar el video de Drive
       if (_videoLinkController.text.contains('drive.google.com')) {
-        final isValid = await DriveService.validateDriveFile(_videoLinkController.text);
+        final isValid = await DriveService.validateDriveFile(
+          _videoLinkController.text,
+        );
         if (!mounted) return;
 
         if (!isValid) {
@@ -140,10 +150,10 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
       final result = await ActivityService.createActivity(
         name: _nameController.text,
         description: _descriptionController.text,
-        minTime: int.parse(_minTimeController.text),
-        maxTime: int.parse(_maxTimeController.text),
-        category: _selectedCategory!,
         videoUrl: _videoLinkController.text,
+        maxTime: int.parse(_maxTimeController.text),
+        steps: _steps,
+        icon: _getIconString(_selectedCategory),
         sensorEnabled: _sensorEnabled,
       );
 
@@ -153,7 +163,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
         // Add log entry
         setState(() {
           _activityLog.add(
-            '[${DateTime.now().toString()}] Creada actividad: ${_nameController.text} - Categoría: $_selectedCategory'
+            '[${DateTime.now().toString()}] Creada actividad: ${_nameController.text} - Categoría: $_selectedCategory',
           );
         });
 
@@ -179,7 +189,6 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
   void _clearForm() {
     _nameController.clear();
     _descriptionController.clear();
-    _minTimeController.clear();
     _maxTimeController.clear();
     _videoLinkController.clear();
     setState(() {
@@ -190,12 +199,15 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
 
   Widget _buildVideoPlayer() {
     if (_isVideoLoading) {
-      return const Center(child: CircularProgressIndicator(color: Colors.white));
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
     }
 
     if (_selectedVideo != null) {
       final videoId = _selectedVideo!['id'];
-      return KeyedSubtree( // Añadir KeyedSubtree
+      return KeyedSubtree(
+        // Añadir KeyedSubtree
         key: ValueKey(videoId), // Usar el videoId como key
         child: Container(
           decoration: BoxDecoration(
@@ -319,15 +331,10 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
             hintText: hint,
             helperText: helperText,
             helperStyle: const TextStyle(color: Colors.grey),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: Color(0xFF0067AC),
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Color(0xFF0067AC), width: 2),
             ),
           ),
         ),
@@ -335,42 +342,16 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
     );
   }
 
-  DropdownMenuItem<String> _buildDropdownItem(String text, IconData icon) {
-    final Map<String, IconData> categoryIcons = {
-      'Visual': Icons.visibility,
-      'Auditiva': Icons.hearing,
-      'Cognitiva': Icons.psychology, // Cambiado de "Mental" a "Cognitiva"
-      'Tren Superior': Icons.accessibility_new,
-      'Tren Inferior': Icons.directions_walk,
-      'Movilidad Articular': Icons.self_improvement,
-      'Estiramientos Generales': Icons.accessibility,
-    };
-
+  DropdownMenuItem<String> _buildDropdownItem(IconData icon, String label) {
     return DropdownMenuItem<String>(
-      value: text,
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 300),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              categoryIcons[text] ?? Icons.circle,
-              color: const Color(0xFF0067AC),
-              size: 20
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                text,
-                style: const TextStyle(
-                  fontFamily: 'HelveticaRounded',
-                  fontSize: 14,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
+      value: label,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: const Color(0xFF0067AC), size: 20),
+          const SizedBox(width: 8),
+          Text(label),
+        ],
       ),
     );
   }
@@ -393,59 +374,13 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
           decoration: BoxDecoration(
             color: const Color(0xFF0067AC).withAlpha(13),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0xFF0067AC).withAlpha(26),
-            ),
+            border: Border.all(color: const Color(0xFF0067AC).withAlpha(26)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Tiempo Mínimo',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF0067AC),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _minTimeController,
-                                keyboardType: TextInputType.number,
-                                decoration: InputDecoration(
-                                  suffixIcon: const Tooltip(
-                                    message: 'Tiempo en segundos',
-                                    child: Icon(Icons.timer_outlined),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            _buildTimePresetButton('30s', '30'),
-                            const SizedBox(width: 4),
-                            _buildTimePresetButton('45s', '45'),
-                            const SizedBox(width: 4),
-                            _buildTimePresetButton('60s', '60'),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,6 +414,12 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                               ),
                             ),
                             const SizedBox(width: 8),
+                            _buildTimePresetButton('30s', '30'),
+                            const SizedBox(width: 4),
+                            _buildTimePresetButton('45s', '45'),
+                            const SizedBox(width: 4),
+                            _buildTimePresetButton('60s', '60'),
+                            const SizedBox(width: 4),
                             _buildTimePresetButton('90s', '90'),
                             const SizedBox(width: 4),
                             _buildTimePresetButton('120s', '120'),
@@ -506,7 +447,8 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.info_outline, 
+                        Icon(
+                          Icons.info_outline,
                           color: Color(0xFF0067AC),
                           size: 16,
                         ),
@@ -546,7 +488,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
   Widget _buildTimePresetButton(String label, String value) {
     return InkWell(
       onTap: () {
-        final controller = label.contains('m') ? _maxTimeController : _minTimeController;
+        final controller = _maxTimeController;
         controller.text = value;
       },
       child: Container(
@@ -564,6 +506,77 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStepsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Pasos del Ejercicio',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF0067AC),
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _stepController,
+                decoration: InputDecoration(
+                  hintText: 'Escribe un paso y presiona "+"',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () {
+                final step = _stepController.text.trim();
+                if (step.isNotEmpty) {
+                  setState(() {
+                    _steps.add(step);
+                    _stepController.clear();
+                  });
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0067AC),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+              ),
+              child: const Icon(Icons.add, color: Colors.white),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (_steps.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: _steps.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(_steps[index]),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    setState(() {
+                      _steps.removeAt(index);
+                    });
+                  },
+                ),
+              );
+            },
+          ),
+      ],
     );
   }
 
@@ -590,7 +603,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Nueva Actividad',
+              'Nueva Actividad / Ejercicio',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -612,13 +625,15 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
               maxLines: 3,
             ),
             const SizedBox(height: 16),
+            _buildStepsSection(), // <-- Agrega la sección de pasos aquí
+            const SizedBox(height: 16),
             _buildTimeSelector(),
             const SizedBox(height: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Categoría',
+                  'Icono para el Ejercicio',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF0067AC),
@@ -629,7 +644,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                   value: _selectedCategory,
                   isExpanded: true,
                   decoration: InputDecoration(
-                    hintText: 'Seleccione una categoría',
+                    hintText: 'Seleccione un icono para la categoría',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -646,25 +661,34 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                     ),
                   ),
                   items: [
-                    _buildDropdownItem('Visual', Icons.visibility),
-                    _buildDropdownItem('Auditiva', Icons.hearing),
-                    _buildDropdownItem('Cognitiva', Icons.psychology),
-                    _buildDropdownItem('Tren Superior', Icons.accessibility_new),
-                    _buildDropdownItem('Tren Inferior', Icons.directions_walk),
-                    _buildDropdownItem('Movilidad Articular', Icons.self_improvement),
-                    _buildDropdownItem('Estiramientos Generales', Icons.accessibility),
+                    _buildDropdownItem(Icons.visibility, 'Visibilidad'),
+                    _buildDropdownItem(Icons.hearing, 'Audición'),
+                    _buildDropdownItem(Icons.psychology, 'Psicología'),
+                    _buildDropdownItem(
+                      Icons.accessibility_new,
+                      'Accesibilidad',
+                    ),
+                    _buildDropdownItem(Icons.directions_walk, 'Movilidad'),
+                    _buildDropdownItem(
+                      Icons.self_improvement,
+                      'Mejora Personal',
+                    ),
                   ],
                   onChanged: (value) {
                     setState(() {
                       _selectedCategory = value;
-                      _showSensorSwitch = value == 'Tren Superior' || 
-                                          value == 'Movilidad Articular';
+                      _showSensorSwitch =
+                          value == 'Tren Superior' ||
+                          value == 'Movilidad Articular';
                       if (!_showSensorSwitch) {
                         _sensorEnabled = false;
                       }
                     });
                   },
-                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF0067AC)),
+                  icon: const Icon(
+                    Icons.arrow_drop_down,
+                    color: Color(0xFF0067AC),
+                  ),
                   dropdownColor: Colors.white,
                   elevation: 3,
                 ),
@@ -680,10 +704,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.sensors,
-                        color: Color(0xFF0067AC),
-                      ),
+                      const Icon(Icons.sensors, color: Color(0xFF0067AC)),
                       const SizedBox(width: 12),
                       const Expanded(
                         child: Column(
@@ -788,7 +809,9 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Text(_activityLog[_activityLog.length - 1 - index]),
+                      child: Text(
+                        _activityLog[_activityLog.length - 1 - index],
+                      ),
                     );
                   },
                 ),

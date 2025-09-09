@@ -7,9 +7,9 @@ class ActivityService {
   static Future<Map<String, dynamic>> createActivity({
     required String name,
     required String description,
-    required int minTime,
     required int maxTime,
-    required String category,
+    required List<String> steps,
+    required String icon,
     required String videoUrl,
     required bool sensorEnabled,
   }) async {
@@ -18,18 +18,11 @@ class ActivityService {
       debugPrint('📋 Datos recibidos:');
       debugPrint('- Nombre: $name');
       debugPrint('- Descripción: ${description.length} caracteres');
-      debugPrint('- Tiempo mínimo: $minTime segundos');
       debugPrint('- Tiempo máximo: $maxTime segundos');
-      debugPrint('- Categoría: $category');
+      debugPrint('- Pasos: ${steps.length} pasos');
+      debugPrint('- Icono: $icon');
       debugPrint('- Video ID: $videoUrl');
       debugPrint('- Sensor: ${sensorEnabled ? "Activado" : "Desactivado"}');
-
-      // Validaciones detalladas
-      if (minTime <= 0) {
-        throw Exception(
-          'El tiempo mínimo debe ser mayor a 0 segundos (recibido: $minTime)',
-        );
-      }
 
       if (maxTime <= 0) {
         throw Exception(
@@ -37,10 +30,12 @@ class ActivityService {
         );
       }
 
-      if (maxTime <= minTime) {
-        throw Exception(
-          'El tiempo máximo ($maxTime) debe ser mayor al tiempo mínimo ($minTime)',
-        );
+      if (name.trim().isEmpty) {
+        throw Exception('El nombre no puede estar vacío');
+      }
+
+      if (description.trim().isEmpty) {
+        throw Exception('La descripción no puede estar vacía');
       }
 
       // Validación adicional del ID del video
@@ -56,22 +51,27 @@ class ActivityService {
         throw Exception('No se encontró un token de administrador');
       }
 
-      final activityData = {
-        'name': name.trim(),
-        'description': description.trim(),
-        'minTime': minTime,
-        'maxTime': maxTime,
-        'category': category,
+      final exerciseData = {
+        'nombre': name.trim(), // Placeholder for backend requirement
+        'duracion': maxTime, // Using maxTime as duration
+        'descripcion': description.trim(),
+        'pasos': [
+          "Siéntate cómodo y relaja la vista.",
+          "Cierra los ojos durante 2 segundos.",
+          "Ábrelos y repite el proceso durante 1 minuto.",
+        ],
+        'icono': "Icons.visibility",
         'videoUrl': cleanVideoUrl,
         'sensorEnabled': sensorEnabled,
+        'idCategory': "xeL6ZXfHmLKtcvRSM8sE",
         // Remove createdAt from request, let backend handle it
       };
 
-      debugPrint('📦 Enviando datos al servidor: $activityData');
+      debugPrint('📦 Enviando datos al servidor: $exerciseData');
 
       final response = await ApiService().post(
-        endpoint: '/admin/activities',
-        data: activityData,
+        endpoint: '/admin/exercises',
+        data: exerciseData,
         token: token,
       );
 
@@ -101,7 +101,7 @@ class ActivityService {
       }
 
       final response = await ApiService().get(
-        '/admin/activities',
+        '/admin/exercises',
         headers: {'Authorization': 'Bearer $token'},
       );
 
@@ -121,11 +121,11 @@ class ActivityService {
     required String id,
     required String name,
     required String description,
-    required int minTime,
     required int maxTime,
-    required String category,
     required String videoUrl,
     required bool sensorEnabled,
+    required String icon,
+    required List<String> steps,
   }) async {
     try {
       // Validate inputs first
@@ -134,9 +134,6 @@ class ActivityService {
       }
       if (description.trim().isEmpty) {
         throw Exception('La descripción no puede estar vacía');
-      }
-      if (minTime < 10 || minTime > maxTime) {
-        throw Exception('Tiempo mínimo inválido');
       }
       if (maxTime > 300) {
         throw Exception('Tiempo máximo no puede exceder 300 segundos');
@@ -158,18 +155,18 @@ class ActivityService {
       }
 
       final sanitizedData = {
-        'name': _sanitizeString(name),
-        'description': _sanitizeString(description),
-        'minTime': minTime,
-        'maxTime': maxTime,
-        'category': category,
+        'nombre': _sanitizeString(name),
+        'descripcion': _sanitizeString(description),
+        'pasos': steps.map(_sanitizeString).toList(),
+        'duracion': maxTime,
+        'icono': icon,
         'videoUrl': _sanitizeString(videoUrl),
         'sensorEnabled': sensorEnabled,
       };
 
       debugPrint('📤 Enviando actualización a servidor...');
       final response = await ApiService().put(
-        endpoint: '/admin/activities/$id',
+        endpoint: '/admin/exercises/$id',
         data: sanitizedData,
         token: token,
       );

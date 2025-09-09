@@ -96,6 +96,8 @@ class ProcessGroupService {
         token: token,
       );
 
+      debugPrint('📝 Respuesta del servidor: ${response.toString()}');
+
       if (response['status'] == true) {
         debugPrint('✅ Grupo actualizado exitosamente');
         return ProcessGroup.fromJson(response['data']);
@@ -149,23 +151,21 @@ class ProcessGroupService {
         throw Exception('No autorizado');
       }
 
+      List<User> validMembers =
+          members.where((user) => user.id.isNotEmpty).toList();
+      List<String> userIds = validMembers.map((user) => user.id).toList();
+
+      debugPrint(
+        '🔄 Enviando solicitud de actualización de miembros: $userIds',
+      );
+
       final response = await _apiService.put(
         endpoint: '/admin/process-groups/$groupId/members',
-        data: {
-          'members':
-              members
-                  .map(
-                    (user) => ({
-                      'id': user.id,
-                      'name': user.name,
-                      'email': user.email,
-                    }),
-                  )
-                  .toList(),
-        },
+        data: {'members': userIds},
         token: token,
       );
 
+      debugPrint('📝 Respuesta del servidor: ${response.toString()}');
       if (response['status'] == true) {
         debugPrint('✅ Miembros actualizados exitosamente');
         return ProcessGroup.fromJson(response['data']);
