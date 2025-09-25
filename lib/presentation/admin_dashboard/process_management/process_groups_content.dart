@@ -1164,31 +1164,38 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
       debugPrint('🔄 Diálogo cerrado: $result');
 
       if (result != null && mounted) {
-        // Filtrar usuarios con id vacío
+        // Filtrar usuarios con id vacío y enviar solo los seleccionados finales
         final filteredResult = result.where((u) => u.id.isNotEmpty).toList();
-
-        // Combinar los usuarios previamente asignados con los nuevos seleccionados, evitando duplicados
-        final updatedMembers = <User>[];
-        final idsSet = <String>{};
-        // Agregar los actuales
-        for (final u in currentMembers) {
-          if (u.id.isNotEmpty && !idsSet.contains(u.id)) {
-            updatedMembers.add(u);
-            idsSet.add(u.id);
-          }
-        }
-        // Agregar los nuevos seleccionados
-        for (final u in filteredResult) {
-          if (u.id.isNotEmpty && !idsSet.contains(u.id)) {
-            updatedMembers.add(u);
-            idsSet.add(u.id);
-          }
+        try {
+          final updatedGroup = await _groupService.updateGroupMembers(
+            group['id'],
+            filteredResult,
+          );
+          if (!mounted) return;
+          setState(() {
+            final index = _groups.indexWhere((g) => g['id'] == group['id']);
+            if (index != -1) {
+              _groups[index] = updatedGroup;
+            }
+          });
+          debugPrint(
+            '✅ Grupo actualizado con ${filteredResult.length} miembros',
+          );
+          debugPrint(
+            '📊 IDs de miembros: ${filteredResult.map((u) => u.id).join(" ,")}',
+          );
+          // Recargar usuarios y grupos tras actualización exitosa
+          await _loadUsers();
+          await _loadGroups();
+        } catch (e) {
+          if (!mounted) return;
+          _showSnackBar('Error al actualizar miembros: $e', isError: true);
         }
 
         try {
           final updatedGroup = await _groupService.updateGroupMembers(
             group['id'],
-            updatedMembers,
+            filteredResult,
           );
 
           if (!mounted) return;
@@ -1201,10 +1208,10 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
           });
 
           debugPrint(
-            '✅ Grupo actualizado con ${updatedMembers.length} miembros',
+            '✅ Grupo actualizado con ${filteredResult.length} miembros',
           );
           debugPrint(
-            '📊 IDs de miembros: ${updatedMembers.map((u) => u.id).join(" ,")}',
+            '📊 IDs de miembros: ${filteredResult.map((u) => u.id).join(" ,")}',
           );
         } catch (e) {
           if (!mounted) return;

@@ -15,17 +15,17 @@ class ApiService {
   static Future<String> resolveBaseUrl() async {
     if (kDebugMode) {
       // For local development
-      return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/';
+      return 'backend-jeyban-test-gydyhdc3dvb7fweq.eastus2-01.azurewebsites.net/';
     }
     // For production
-    return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/'; // Update with your production URL
+    return 'backend-jeyban-test-gydyhdc3dvb7fweq.eastus2-01.azurewebsites.net/'; // Update with your production URL
   }
 
   String _getOrigin() {
     if (kIsWeb) {
-      return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/';
+      return 'backend-jeyban-test-gydyhdc3dvb7fweq.eastus2-01.azurewebsites.net/';
     }
-    return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/';
+    return 'backend-jeyban-test-gydyhdc3dvb7fweq.eastus2-01.azurewebsites.net/';
   }
 
   Future<Map<String, dynamic>> authenticateAdmin(
