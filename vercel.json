@@ -4,9 +4,6 @@
     { "src": "build/web/**", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/manifest.json", "dest": "/build/web/manifest.json" },
-    { "src": "/favicon.ico", "dest": "/build/web/favicon.ico" },
-    { "src": "/assets/(.*)", "dest": "/build/web/assets/$1" },
-    { "src": "/.*", "dest": "/build/web/index.html" }
+    { "src": "/(.*)", "dest": "/build/web/$1" }
   ]
 }
