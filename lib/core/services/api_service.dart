@@ -15,17 +15,17 @@ class ApiService {
   static Future<String> resolveBaseUrl() async {
     if (kDebugMode) {
       // For local development
-      return 'http://localhost:4300';
+      return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/';
     }
     // For production
-    return 'http://localhost:4300'; // Update with your production URL
+    return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/'; // Update with your production URL
   }
 
   String _getOrigin() {
     if (kIsWeb) {
-      return 'http://localhost:4300/';
+      return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/';
     }
-    return 'http://localhost:4300/';
+    return 'https://ecobreack-dda8hhb8aad6gvcw.westus3-01.azurewebsites.net/';
   }
 
   Future<Map<String, dynamic>> authenticateAdmin(
