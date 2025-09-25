@@ -11,6 +11,7 @@ class EditPlansContent extends StatefulWidget {
 }
 
 class _EditPlansContentState extends State<EditPlansContent> {
+  final PlanService _planService = PlanService();
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = true;
   String _error = '';
@@ -25,25 +26,42 @@ class _EditPlansContentState extends State<EditPlansContent> {
   }
 
   Future<void> _loadPlans() async {
+    setState(() => _isLoading = true);
     try {
-      setState(() {
-        _isLoading = true;
-        _error = '';
-      });
-
-      final plans = await PlanService.getPlans();
-      
+      final plans = await PlanService.getPlans(); // <-- método estático
       if (!mounted) return;
       setState(() {
         _plans = plans;
         _isLoading = false;
       });
     } catch (e) {
+      debugPrint('Error loading plans: $e');
       if (!mounted) return;
       setState(() {
-        _error = e.toString();
+        _error = 'Error cargando planes';
         _isLoading = false;
       });
+    }
+  }
+
+  IconData getCategoryFromIconString(String iconString) {
+    debugPrint('Obteniendo ícono para la categoría: $iconString');
+    final iconName = iconString.split('.').last;
+    switch (iconName) {
+      case 'visibility':
+        return Icons.visibility;
+      case 'hearing':
+        return Icons.hearing;
+      case 'psychology':
+        return Icons.psychology;
+      case 'accessibility_new':
+        return Icons.accessibility_new;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      case 'self_improvement':
+        return Icons.self_improvement;
+      default:
+        return Icons.help_outline;
     }
   }
 
@@ -66,9 +84,12 @@ class _EditPlansContentState extends State<EditPlansContent> {
       );
     }
 
-    final filteredPlans = _plans.where((plan) {
-      return plan['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase());
-    }).toList();
+    final filteredPlans =
+        _plans.where((plan) {
+          return plan['nombre'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          );
+        }).toList();
 
     return Container(
       decoration: BoxDecoration(
@@ -80,21 +101,23 @@ class _EditPlansContentState extends State<EditPlansContent> {
           _buildHeader(),
           const SizedBox(height: 24),
           Expanded(
-            child: filteredPlans.isEmpty
-                ? _buildEmptyState()
-                : GridView.builder(
-                    padding: const EdgeInsets.all(24),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 1.5,
-                      crossAxisSpacing: 24,
-                      mainAxisSpacing: 24,
+            child:
+                filteredPlans.isEmpty
+                    ? _buildEmptyState()
+                    : GridView.builder(
+                      padding: const EdgeInsets.all(24),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 1.5,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                          ),
+                      itemCount: filteredPlans.length,
+                      itemBuilder: (context, index) {
+                        return _buildPlanCard(filteredPlans[index]);
+                      },
                     ),
-                    itemCount: filteredPlans.length,
-                    itemBuilder: (context, index) {
-                      return _buildPlanCard(filteredPlans[index]);
-                    },
-                  ),
           ),
         ],
       ),
@@ -118,7 +141,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Planes Creados',
+            'Planes de Pausas Creados',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -143,9 +166,12 @@ class _EditPlansContentState extends State<EditPlansContent> {
                         onChanged: (value) {
                           setState(() {
                             _selectAll = value ?? false;
-                            _selectedPlans = _selectAll 
-                                ? _plans.map((e) => e['id'] as String).toSet()
-                                : {};
+                            _selectedPlans =
+                                _selectAll
+                                    ? _plans
+                                        .map((e) => e['id'] as String)
+                                        .toSet()
+                                    : {};
                           });
                         },
                       ),
@@ -211,10 +237,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
                   onChanged: (value) => setState(() => _searchQuery = value),
                   decoration: InputDecoration(
                     hintText: 'Buscar plan...',
-                    hintStyle: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 14,
-                    ),
+                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                     prefixIcon: Icon(
                       Icons.search,
                       color: const Color(0xFF0067AC).withAlpha(150),
@@ -241,14 +264,16 @@ class _EditPlansContentState extends State<EditPlansContent> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF0067AC).withAlpha(50),
-            const Color(0xFF0067AC).withAlpha(10),
+            const Color.fromARGB(255, 255, 255, 255).withAlpha(50),
+            plan['color'] != null
+                ? Color(plan['color']).withAlpha(30)
+                : const Color(0xFF0067AC).withAlpha(30),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0067AC).withAlpha(20),
+            color: const Color.fromARGB(255, 83, 83, 83).withAlpha(20),
             offset: const Offset(0, 4),
             blurRadius: 12,
             spreadRadius: 0,
@@ -256,7 +281,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
         ],
       ),
       child: Material(
-        color: Colors.transparent,
+        color: const Color.fromARGB(0, 160, 160, 160),
         child: InkWell(
           onTap: () => _showPlanDetails(plan),
           borderRadius: BorderRadius.circular(12),
@@ -270,12 +295,17 @@ class _EditPlansContentState extends State<EditPlansContent> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0067AC).withAlpha(30),
+                        color:
+                            plan['color'] != null
+                                ? Color(plan['color'])
+                                : const Color(0xFF0067AC).withAlpha(30),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
-                        Icons.fitness_center,
-                        color: const Color(0xFF0067AC).withAlpha(200),
+                        getCategoryFromIconString(
+                          plan['ejercicios'][0]['icono'] ?? '',
+                        ),
+                        color: const Color.fromARGB(255, 255, 255, 255),
                         size: 24,
                       ),
                     ),
@@ -285,11 +315,11 @@ class _EditPlansContentState extends State<EditPlansContent> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            plan['name'] ?? 'Sin nombre',
-                            style: const TextStyle(
+                            plan['nombre'] ?? 'Sin nombre',
+                            style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF0067AC),
+                              color: Colors.grey[800],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -305,34 +335,48 @@ class _EditPlansContentState extends State<EditPlansContent> {
                       ),
                     ),
                     PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert, color: Color(0xFF0067AC)),
+                      icon: Icon(
+                        Icons.more_vert,
+                        color:
+                            plan['color'] != null
+                                ? Color(plan['color'])
+                                : const Color(0xFF0067AC).withAlpha(30),
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: 'edit',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.edit, color: Color(0xFF0067AC)),
-                              const SizedBox(width: 8),
-                              const Text('Editar'),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Row(
-                            children: [
-                              const Icon(Icons.delete, color: Colors.red),
-                              const SizedBox(width: 8),
-                              const Text('Eliminar', 
-                                style: TextStyle(color: Colors.red)
+                      itemBuilder:
+                          (context) => [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.edit,
+                                    color:
+                                        plan['color'] != null
+                                            ? Color(plan['color'])
+                                            : const Color(0xFF0067AC),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text('Editar'),
+                                ],
                               ),
-                            ],
-                          ),
-                        ),
-                      ],
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.delete, color: Colors.red),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Eliminar',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                       onSelected: (value) async {
                         if (value == 'edit') {
                           await _editPlan(plan);
@@ -344,22 +388,106 @@ class _EditPlansContentState extends State<EditPlansContent> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  plan['description'] ?? 'Sin descripción',
-                  style: TextStyle(
-                    color: Colors.grey[800],
-                    fontSize: 14,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                // Descripción
+                Row(
+                  children: [
+                    Icon(
+                      Icons.description,
+                      color:
+                          plan['color'] != null
+                              ? Color(plan['color'])
+                              : Colors.blue.shade300,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        plan['descripcion'] ?? 'Sin descripción',
+                        style: TextStyle(
+                          color: Colors.grey[900],
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Estado
+                Row(
+                  children: [
+                    Icon(
+                      plan['status'] == true
+                          ? Icons.check_circle
+                          : Icons.pause_circle,
+                      color:
+                          plan['status'] == true ? Colors.green : Colors.orange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Estado: ',
+                      style: TextStyle(
+                        color: Colors.grey[900],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      (plan['status'] == true) ? 'Activo' : 'Inactivo',
+                      style: TextStyle(
+                        color:
+                            plan['status'] == true
+                                ? Colors.green
+                                : Colors.orange,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Fecha de creación
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      color:
+                          plan['color'] != null
+                              ? Color(plan['color'])
+                              : Colors.blue.shade300,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Última actualización: ',
+                      style: TextStyle(
+                        color: Colors.grey[900],
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      _formatDate(plan['updatedAt']),
+                      style: TextStyle(
+                        color: Colors.blue.shade700,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
                 const Spacer(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _buildInfoChip(
-                      icon: Icons.fitness_center,
-                      label: '${(plan['activities'] as List?)?.length ?? 0} ejercicios',
+                      icon: Icons.move_up,
+                      label: '${plan['ejercicios']?.length ?? 0} ejercicios',
+                      color:
+                          plan['color'] != null ? Color(plan['color']) : null,
                     ),
                   ],
                 ),
@@ -371,22 +499,26 @@ class _EditPlansContentState extends State<EditPlansContent> {
     );
   }
 
-  Widget _buildInfoChip({required IconData icon, required String label}) {
+  Widget _buildInfoChip({
+    required IconData icon,
+    required String label,
+    Color? color,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0067AC).withAlpha(10),
+        color: color ?? const Color(0xFF0067AC).withAlpha(10),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: const Color(0xFF0067AC)),
+          Icon(icon, size: 32, color: Colors.white),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF0067AC),
+            style: TextStyle(
+              color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
@@ -418,10 +550,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
           const SizedBox(height: 8),
           Text(
             'Crea un nuevo plan para empezar',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.grey[600], fontSize: 16),
           ),
         ],
       ),
@@ -438,34 +567,37 @@ class _EditPlansContentState extends State<EditPlansContent> {
   void _confirmDeletePlan(Map<String, dynamic> plan) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Confirmar Eliminación'),
-        content: Text('¿Está seguro de eliminar el plan "${plan['name']}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              _deletePlan(plan);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text('Confirmar Eliminación'),
+            content: Text(
+              '¿Está seguro de eliminar el plan "${plan['nombre']}"?',
             ),
-            child: const Text('Eliminar'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  _deletePlan(plan);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Eliminar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
   Future<void> _deletePlan(Map<String, dynamic> plan) async {
     try {
       await PlanService.deletePlan(plan['id']);
-      
+
       if (!mounted) return;
 
       final messenger = ScaffoldMessenger.of(context);
@@ -494,7 +626,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
       context: context,
       builder: (context) => EditPlanDialog(plan: plan),
     );
-    
+
     if (result == true) {
       _loadPlans(); // Recargar la lista después de editar
     }
@@ -505,14 +637,14 @@ class _EditPlansContentState extends State<EditPlansContent> {
       for (String planId in _selectedPlans) {
         await PlanService.deletePlan(planId);
       }
-      
+
       if (!mounted) return;
 
       setState(() {
         _selectedPlans.clear();
         _selectAll = false;
       });
-      
+
       _loadPlans();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -523,7 +655,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
       );
     } catch (e) {
       if (!mounted) return;
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('❌ Error: ${e.toString()}'),

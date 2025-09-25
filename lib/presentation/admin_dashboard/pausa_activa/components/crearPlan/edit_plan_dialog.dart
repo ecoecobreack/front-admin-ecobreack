@@ -17,7 +17,7 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
   List<Map<String, dynamic>> _availableActivities = [];
   List<Map<String, dynamic>> _selectedActivities = [];
   bool _isLoading = true;
-
+  Color _selectedColor = const Color(0xFF4FC3F7); // Valor inicial
   @override
   void initState() {
     super.initState();
@@ -29,13 +29,26 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
       setState(() => _isLoading = true);
 
       // Cargar datos del plan actual
-      _nameController.text = widget.plan['name'] ?? '';
-      _descriptionController.text = widget.plan['description'] ?? '';
+      _nameController.text = widget.plan['nombre'] ?? '';
+      _descriptionController.text = widget.plan['descripcion'] ?? '';
+      _selectedActivities =
+          widget.plan['ejercicios'] != null
+              ? List<Map<String, dynamic>>.from(widget.plan['ejercicios'])
+              : [];
+
+      // Inicializa el color del plan
+      final colorValue = widget.plan['color'];
+      setState(() {
+        _selectedColor =
+            colorValue != null
+                ? Color(colorValue)
+                : const Color(0xFF4FC3F7); // Valor por defecto
+      });
 
       // Obtener actividades completas
       final activities = await ActivityService.getActivities();
       final selectedActivityIds = List<String>.from(
-        widget.plan['activities']?.map((a) => a['activityId'] ?? a['id']) ?? [],
+        widget.plan['ejercicios']?.map((a) => a['id'] ?? a['id']) ?? [],
       );
 
       // Filtrar actividades seleccionadas
@@ -79,16 +92,17 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
       }
 
       final updatedPlan = {
-        'id': widget.plan['id'],
         'name': _nameController.text.trim(),
         'description': _descriptionController.text.trim(),
-        'activities':
+        'color': _selectedColor.value,
+        'status': widget.plan['status'],
+        'ejercicios':
             _selectedActivities
                 .asMap()
                 .entries
                 .map(
                   (entry) => {
-                    'activityId': entry.value['id'],
+                    'actividadId': entry.value['id'],
                     'order': entry.key,
                   },
                 )
@@ -141,7 +155,7 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                     itemBuilder: (context, index) {
                       final activity = _availableActivities[index];
                       final categoryColor = _getCategoryColor(
-                        activity['category'],
+                        activity['icono'],
                       );
 
                       return Draggable<Map<String, dynamic>>(
@@ -168,18 +182,18 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                             ),
                             child: ListTile(
                               leading: Icon(
-                                _getCategoryIcon(activity['category']),
+                                _getCategoryIcon(activity['icono']),
                                 color: categoryColor,
                               ),
                               title: Text(
-                                activity['name'] ?? '',
+                                activity['nombre'] ?? '',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   color: categoryColor,
                                 ),
                               ),
                               subtitle: Text(
-                                activity['category'] ?? '',
+                                activity['descripcion'] ?? '',
                                 style: TextStyle(color: categoryColor),
                               ),
                             ),
@@ -234,7 +248,12 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                         decoration: BoxDecoration(
                           color:
                               candidateData.isNotEmpty
-                                  ? const Color(0xFF0067AC).withAlpha(20)
+                                  ? const Color.fromARGB(
+                                    255,
+                                    49,
+                                    172,
+                                    0,
+                                  ).withAlpha(20)
                                   : null,
                         ),
                         child: ReorderableListView.builder(
@@ -243,7 +262,7 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                           itemBuilder: (context, index) {
                             final activity = _selectedActivities[index];
                             final categoryColor = _getCategoryColor(
-                              activity['category'],
+                              activity['icono'],
                             );
 
                             return Card(
@@ -267,28 +286,47 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                                     child: Text(
                                       '${index + 1}',
                                       style: TextStyle(
-                                        color: categoryColor,
+                                        color: const Color.fromARGB(
+                                          255,
+                                          49,
+                                          172,
+                                          0,
+                                        ),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
                                 ),
                                 title: Text(
-                                  activity['name'] ?? '',
+                                  activity['nombre'] ?? '',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    color: categoryColor,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      49,
+                                      172,
+                                      0,
+                                    ),
                                   ),
                                 ),
                                 subtitle: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      activity['category'] ?? '',
-                                      style: TextStyle(color: categoryColor),
+                                      activity['sensorEnabled']
+                                          ? 'Sensor Activado'
+                                          : 'Sensor Desactivado',
+                                      style: TextStyle(
+                                        color: const Color.fromARGB(
+                                          255,
+                                          49,
+                                          172,
+                                          0,
+                                        ),
+                                      ),
                                     ),
                                     Text(
-                                      '${activity['maxTime']} segundos',
+                                      '${activity['duracion']} segundos',
                                       style: const TextStyle(fontSize: 12),
                                     ),
                                   ],
@@ -330,7 +368,7 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
   }
 
   Widget _buildActivityCard(Map<String, dynamic> activity) {
-    final categoryColor = _getCategoryColor(activity['category']);
+    final categoryColor = _getCategoryColor(activity['icono']);
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -344,26 +382,25 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
   }
 
   Widget _buildActivityTile(Map<String, dynamic> activity) {
-    final categoryColor = _getCategoryColor(activity['category']);
+    final categoryColor = _getCategoryColor(activity['icono']);
 
     return ListTile(
-      leading: Icon(
-        _getCategoryIcon(activity['category']),
-        color: categoryColor,
-      ),
+      leading: Icon(_getCategoryIcon(activity['icono']), color: categoryColor),
       title: Text(
-        activity['name'] ?? '',
+        activity['nombre'] ?? '',
         style: const TextStyle(fontWeight: FontWeight.w500),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            activity['category'] ?? '',
+            activity['sensorEnabled']
+                ? 'Sensor Activado'
+                : 'Sensor Desactivado',
             style: TextStyle(color: categoryColor),
           ),
           Text(
-            '${activity['maxTime']} segundos',
+            '${activity['duracion']} segundos',
             style: const TextStyle(fontSize: 12),
           ),
         ],
@@ -391,23 +428,24 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
   }
 
   IconData _getCategoryIcon(String category) {
-    switch (category.toLowerCase()) {
-      case 'visual':
+    // El string viene como "Icons.psychology", extraemos el nombre del icono
+    final iconName = category.split('.').last;
+
+    switch (iconName) {
+      case 'visibility':
         return Icons.visibility;
-      case 'auditiva':
+      case 'hearing':
         return Icons.hearing;
-      case 'cognitiva':
+      case 'psychology':
         return Icons.psychology;
-      case 'tren superior':
+      case 'accessibility_new':
         return Icons.accessibility_new;
-      case 'tren inferior':
+      case 'directions_walk':
         return Icons.directions_walk;
-      case 'movilidad articular':
+      case 'self_improvement':
         return Icons.self_improvement;
-      case 'estiramientos generales':
-        return Icons.accessibility;
       default:
-        return Icons.fitness_center;
+        return Icons.extension;
     }
   }
 
@@ -486,6 +524,42 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
                                   'Describa el propósito y objetivos del plan',
                               maxLines: 4,
                             ),
+                            const SizedBox(height: 24),
+                            // Campo para cambiar el estado del plan
+                            Row(
+                              children: [
+                                const Text(
+                                  'Estado:',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF0067AC),
+                                  ),
+                                ),
+                                const SizedBox(width: 24),
+                                DropdownButton<String>(
+                                  value:
+                                      widget.plan['status'] == true
+                                          ? 'active'
+                                          : 'inactive',
+                                  items: const [
+                                    DropdownMenuItem(
+                                      value: 'active',
+                                      child: Text('Activo'),
+                                    ),
+                                    DropdownMenuItem(
+                                      value: 'inactive',
+                                      child: Text('Inactivo'),
+                                    ),
+                                  ],
+                                  onChanged: (value) {
+                                    setState(() {
+                                      widget.plan['status'] = value == 'active';
+                                    });
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
                             const SizedBox(height: 24),
                             // Panel de actividades
                             Container(
@@ -627,7 +701,7 @@ class _EditPlanDialogState extends State<EditPlanDialog> {
   String _calculateTotalDuration() {
     final totalSeconds = _selectedActivities.fold<int>(
       0,
-      (sum, activity) => sum + (activity['maxTime'] as int? ?? 0),
+      (sum, activity) => sum + ((activity['duracion'] ?? 0) as int),
     );
 
     final minutes = totalSeconds ~/ 60;

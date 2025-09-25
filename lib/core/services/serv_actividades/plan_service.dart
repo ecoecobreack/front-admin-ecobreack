@@ -8,6 +8,7 @@ class PlanService {
   static Future<Map<String, dynamic>> createPlan({
     required String name,
     required String description,
+    required int color,
     required List<Map<String, dynamic>> activities,
   }) async {
     try {
@@ -41,13 +42,14 @@ class PlanService {
       }
 
       final planData = {
-        'name': name.trim(),
-        'description': description.trim(),
+        'nombre': name.trim(),
+        'descripcion': description.trim(),
+        'color': color,
         'activities':
             activities
                 .map(
                   (activity) => {
-                    'activityId': activity['id'],
+                    'actividadId': activity['id'],
                     'order': activities.indexOf(activity),
                   },
                 )
@@ -58,7 +60,7 @@ class PlanService {
       debugPrint('📦 Enviando datos al servidor: $planData');
 
       final response = await ApiService().post(
-        endpoint: '/admin/plans',
+        endpoint: '/admin/categorias',
         data: planData,
         token: token,
       );
@@ -125,14 +127,13 @@ class PlanService {
         throw Exception('No se encontró un token de administrador');
       }
 
-      final response = await ApiService().get(
-        '/admin/plans',
-        query: {'includeDetails': 'true'}, // Solicitar detalles completos
-      );
+      final response = await ApiService().get('/admin/categorias');
 
       if (response['status'] == true && response['data'] != null) {
-        final plans = List<Map<String, dynamic>>.from(response['data']);
-        debugPrint('✅ Planes cargados: ${plans.length}');
+        final plansRaw = response['data'] as List;
+        final plans =
+            plansRaw.map((e) => Map<String, dynamic>.from(e)).toList();
+        debugPrint('✅ Planes cargados: $plans');
         return plans;
       }
 
@@ -156,13 +157,15 @@ class PlanService {
 
       // Preparar datos en el formato correcto
       final planData = {
-        'name': plan['name'] as String,
-        'description': plan['description'] as String,
+        'nombre': plan['name'] ?? '',
+        'descripcion': plan['description'] ?? '',
+        'color': plan['color'] ?? 0,
+        'estado': plan['status'] ?? 'active',
         'activities':
-            (plan['activities'] as List)
+            (plan['ejercicios'] as List)
                 .map(
                   (activity) => {
-                    'activityId': activity['id'] ?? activity['activityId'],
+                    'actividadId': activity['actividadId'],
                     'order': activity['order'],
                   },
                 )
@@ -172,7 +175,7 @@ class PlanService {
       debugPrint('📦 Datos a enviar: $planData');
 
       final response = await ApiService().put(
-        endpoint: '/admin/plans/$id',
+        endpoint: '/admin/categorias/$id',
         data: planData,
         token: token,
       );
@@ -198,7 +201,7 @@ class PlanService {
       }
 
       final response = await ApiService().delete(
-        endpoint: '/admin/plans/$id',
+        endpoint: '/admin/categorias/$id',
         token: token,
       );
 

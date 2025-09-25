@@ -301,7 +301,7 @@ class _HistoryContentState extends State<HistoryContent> {
                         child: Row(
                           children: [
                             _buildStatCard(
-                              'Total Pausas',
+                              'Total Actividades',
                               _pauseHistory.length.toString(),
                               Icons.fitness_center,
                             ),
@@ -544,7 +544,7 @@ class _HistoryContentState extends State<HistoryContent> {
                         Expanded(
                           flex: 2,
                           child: Text(
-                            'Plan',
+                            'Actividad',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
@@ -597,7 +597,7 @@ class _HistoryContentState extends State<HistoryContent> {
             child: Text(DateFormat('dd/MM/yyyy HH:mm').format(pause.date)),
           ),
           Expanded(flex: 2, child: Text(pause.planName)),
-          Expanded(flex: 1, child: Text('${pause.duration} min')),
+          Expanded(flex: 1, child: Text('${pause.duration} seg')),
           Expanded(flex: 1, child: _buildCompletionRate(pause.completionRate)),
         ],
       ),
@@ -631,7 +631,12 @@ class _HistoryContentState extends State<HistoryContent> {
   }
 
   int _calculateTotalTime() {
-    return _pauseHistory.fold(0, (sum, pause) => sum + pause.duration);
+    // Suma la duración (en segundos) y lo convierte a minutos redondeando hacia abajo
+    final totalSeconds = _pauseHistory.fold(
+      0,
+      (sum, pause) => sum + pause.duration,
+    );
+    return (totalSeconds / 60).floor();
   }
 
   Future<void> _exportData() async {

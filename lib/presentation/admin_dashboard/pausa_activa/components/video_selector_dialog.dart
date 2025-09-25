@@ -4,10 +4,7 @@ import '../../../../core/services/serv_actividades/drive_service.dart';
 class VideoSelectorDialog extends StatefulWidget {
   final Function(Map<String, dynamic>) onVideoSelected;
 
-  const VideoSelectorDialog({
-    super.key,
-    required this.onVideoSelected,
-  });
+  const VideoSelectorDialog({super.key, required this.onVideoSelected});
 
   @override
   State<VideoSelectorDialog> createState() => _VideoSelectorDialogState();
@@ -34,9 +31,9 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
       });
 
       final videos = await DriveService.listVideos();
-      
+
       if (!mounted) return;
-      
+
       setState(() {
         _videos = videos;
         _isLoading = false;
@@ -103,7 +100,8 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
                     ),
                     child: TextField(
                       controller: _searchController,
-                      onChanged: (value) => setState(() => _searchQuery = value),
+                      onChanged:
+                          (value) => setState(() => _searchQuery = value),
                       decoration: InputDecoration(
                         hintText: 'Buscar video...',
                         prefixIcon: const Icon(Icons.search),
@@ -174,9 +172,14 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
       );
     }
 
-    final filteredVideos = _videos.where((video) =>
-      video['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    final filteredVideos =
+        _videos
+            .where(
+              (video) => video['name'].toString().toLowerCase().contains(
+                _searchQuery.toLowerCase(),
+              ),
+            )
+            .toList();
 
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -190,9 +193,40 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
     );
   }
 
+  String getDirectDriveUrl(String driveUrl) {
+    final uri = Uri.parse(driveUrl);
+    String? fileId;
+
+    // Si viene como thumbnail?id=...
+    if (uri.queryParameters.containsKey("id")) {
+      fileId = uri.queryParameters["id"];
+    }
+    // Si viene como /file/d/<id>/view
+    else if (uri.pathSegments.contains("d")) {
+      final dIndex = uri.pathSegments.indexOf("d");
+      if (dIndex != -1 && dIndex + 1 < uri.pathSegments.length) {
+        fileId = uri.pathSegments[dIndex + 1];
+      }
+    }
+
+    if (fileId == null) {
+      throw Exception(
+        "No se pudo extraer el ID de Google Drive de la URL: $driveUrl",
+      );
+    }
+
+    return "https://drive.google.com/uc?export=view&id=$fileId";
+  }
+
   Widget _buildVideoCard(Map<String, dynamic> video) {
-    final duration = Duration(milliseconds: int.parse(video['duration']?.toString() ?? '0'));
-    
+    debugPrint('Construyendo tarjeta de video: ${video['thumbnailUrl']}');
+    final duration = Duration(
+      milliseconds: int.tryParse(video['duration'].toString()) ?? 0,
+    );
+
+    String fileId = video['thumbnailUrl'];
+    String directUrl = getDirectDriveUrl(fileId);
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -205,9 +239,11 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(12),
+                  ),
                   image: DecorationImage(
-                    image: NetworkImage(video['thumbnailUrl']),
+                    image: NetworkImage(directUrl),
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -218,7 +254,9 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(76),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
                         ),
                         child: const Icon(
                           Icons.play_circle_outline,
@@ -232,14 +270,20 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
                       bottom: 8,
                       right: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withAlpha(178),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           '${duration.inMinutes}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}',
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -264,10 +308,7 @@ class _VideoSelectorDialogState extends State<VideoSelectorDialog> {
                   const SizedBox(height: 4),
                   Text(
                     _formatSize(video['size'] ?? 0),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),

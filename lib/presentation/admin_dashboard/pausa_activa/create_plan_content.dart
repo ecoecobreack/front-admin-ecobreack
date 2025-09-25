@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/serv_actividades/activity_service.dart';
 import '../../../core/services/serv_actividades/plan_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CreatePlanContent extends StatefulWidget {
   const CreatePlanContent({super.key});
@@ -14,6 +15,8 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
   final _descriptionController = TextEditingController();
   List<Map<String, dynamic>> _availableActivities = [];
   final List<Map<String, dynamic>> _selectedActivities = [];
+  Color _selectedColor = const Color.fromARGB(255, 173, 186, 192); // Valor inicial
+
   bool _isLoading = true;
 
   @override
@@ -34,6 +37,11 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
       debugPrint('Error cargando actividades: $e');
       setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> saveSelectedColor(Color color) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('selectedColor', color.value);
   }
 
   Future<void> _savePlan() async {
@@ -94,7 +102,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
                     backgroundColor: const Color(0xFF0067AC),
                   ),
                   child: const Text(
-                    'Crear Plan',
+                    'Crear Plan de Pausas',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -119,6 +127,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
       final result = await PlanService.createPlan(
         name: _nameController.text,
         description: _descriptionController.text,
+        color: _selectedColor.value,
         activities:
             _selectedActivities
                 .asMap()
@@ -169,36 +178,44 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
   }
 
   Color _getCategoryColor(String category) {
-    switch (category.toLowerCase()) {
-      case 'visual':
-      case 'tren superior':
-        return const Color(0xFF0067AC); // Azul corporativo
-      case 'tren inferior':
-        return const Color(0xFFC6DA23); // Verde corporativo
-      case 'movilidad articular':
-        return const Color(0xFFFF9800); // Naranja
-      case 'estiramientos generales':
-        return const Color(0xFF673AB7); // Morado
+    // recortar "Icons."
+    switch (category) {
+      case 'Icons.visibility':
+        return const Color(0xFF4FC3F7); // Azul claro (Visual)
+      case 'Icons.hearing':
+        return const Color(0xFF9575CD); // Morado (Auditiva)
+      case 'Icons.psychology':
+        return const Color(0xFFFFB74D); // Naranja (Cognitiva)
+      case 'Icons.accessibility_new':
+        return const Color(0xFF1976D2); // Azul fuerte (Tren Superior)
+      case 'Icons.directions_walk':
+        return const Color(0xFFC6DA23); // Verde claro (Tren Inferior)
+      case 'Icons.self_improvement':
+        return const Color(0xFF26C6DA); // Turquesa (Movilidad Articular)
+      case 'Icons.extension':
+        return const Color(
+          0xFFFF8A65,
+        ); // Naranja suave (Estiramientos Generales)
       default:
-        return const Color(0xFF0067AC);
+        return const Color(0xFFBDBDBD); // Color gris por defecto
     }
   }
 
   IconData _getCategoryIcon(String category) {
     switch (category.toLowerCase()) {
-      case 'visual':
+      case 'visibility':
         return Icons.visibility;
-      case 'auditiva':
+      case 'hearing':
         return Icons.hearing;
-      case 'cognitiva':
+      case 'psychology':
         return Icons.psychology;
-      case 'tren superior':
+      case 'accessibility_new':
         return Icons.accessibility_new;
-      case 'tren inferior':
+      case 'directions_walk':
         return Icons.directions_walk;
-      case 'movilidad articular':
+      case 'self_improvement':
         return Icons.self_improvement;
-      case 'estiramientos generales':
+      case 'accessibility':
         return Icons.accessibility;
       default:
         return Icons.fitness_center;
@@ -247,7 +264,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
                     children: [
                       _buildTextField(
                         controller: _nameController,
-                        label: 'Nombre del Plan',
+                        label: 'Nombre del Plan / Categoría',
                         hint: 'Ingrese el nombre del plan',
                       ),
                       const SizedBox(height: 16),
@@ -313,24 +330,37 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
                         // Lista de actividades disponibles
                         Expanded(child: _buildAvailableActivitiesList()),
                         // Botones de acción
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                // Agregar actividad seleccionada
-                              },
-                              icon: const Icon(Icons.chevron_right),
-                              color: const Color(0xFF0067AC),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.grey[100],
+                            border: Border(
+                              left: BorderSide(
+                                color: const Color(0xFF0067AC).withAlpha(40),
+                              ),
+                              right: BorderSide(
+                                color: const Color(0xFF0067AC).withAlpha(40),
+                              ),
                             ),
-                            IconButton(
-                              onPressed: () {
-                                // Remover actividad del plan
-                              },
-                              icon: const Icon(Icons.chevron_left),
-                              color: const Color(0xFF0067AC),
-                            ),
-                          ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  // Agregar actividad seleccionada
+                                },
+                                icon: const Icon(Icons.chevron_right),
+                                color: const Color(0xFF0067AC),
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  // Remover actividad del plan
+                                },
+                                icon: const Icon(Icons.chevron_left),
+                                color: const Color(0xFF0067AC),
+                              ),
+                            ],
+                          ),
                         ),
                         // Lista de actividades seleccionadas
                         Expanded(child: _buildSelectedActivitiesList()),
@@ -504,7 +534,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
                     itemBuilder: (context, index) {
                       final activity = _availableActivities[index];
                       final categoryColor = _getCategoryColor(
-                        activity['category'],
+                        activity['icono'],
                       );
 
                       return Draggable<Map<String, dynamic>>(
@@ -518,7 +548,11 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: _buildActivityTile(activity, categoryColor),
+                            child: _buildActivityTile(
+                              activity,
+                              categoryColor,
+                              activity['icono'],
+                            ),
                           ),
                         ),
                         child: _buildActivityCard(activity, categoryColor),
@@ -615,7 +649,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
         borderRadius: BorderRadius.circular(8),
         side: BorderSide(color: categoryColor.withAlpha(50)),
       ),
-      child: _buildActivityTile(activity, categoryColor),
+      child: _buildActivityTile(activity, categoryColor, activity['icono']),
     );
   }
 
@@ -624,7 +658,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
     int index, {
     Key? key,
   }) {
-    final categoryColor = _getCategoryColor(activity['category']);
+    final categoryColor = _getCategoryColor(activity['icono']);
 
     return Card(
       key: key,
@@ -639,8 +673,8 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 24,
-              height: 24,
+              width: 25,
+              height: 25,
               decoration: BoxDecoration(
                 color: categoryColor,
                 shape: BoxShape.circle,
@@ -656,15 +690,19 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
               ),
             ),
             const SizedBox(width: 8),
-            Icon(_getCategoryIcon(activity['category']), color: categoryColor),
+            Icon(
+              _getCategoryIcon(activity['icono'].split('.').last),
+              color: categoryColor,
+              size: 32,
+            ),
           ],
         ),
         title: Text(
-          activity['name'],
-          style: const TextStyle(fontWeight: FontWeight.w500),
+          activity['nombre'],
+          style: const TextStyle(fontWeight: FontWeight.w200),
         ),
         subtitle: Text(
-          activity['category'],
+          'Pasos: ${activity['pasos'].length.toString()}',
           style: TextStyle(color: categoryColor),
         ),
         trailing: IconButton(
@@ -682,17 +720,27 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
   Widget _buildActivityTile(
     Map<String, dynamic> activity,
     Color categoryColor,
+    String icon,
   ) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 400),
+      padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          Expanded(child: Icon(Icons.fitness_center, color: categoryColor)),
-          const SizedBox(width: 8),
+          Expanded(
+            child: Icon(
+              _getCategoryIcon(
+                icon.contains('.') ? icon.split('.').last : icon,
+              ),
+              color: categoryColor,
+              size: 38,
+            ),
+          ),
+          const SizedBox(width: 4),
           Expanded(
             flex: 4,
             child: Text(
-              activity['name'] ?? '',
+              activity['nombre'] ?? '',
               style: const TextStyle(fontWeight: FontWeight.w500),
               overflow: TextOverflow.ellipsis,
             ),
@@ -700,7 +748,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
           Expanded(
             flex: 2,
             child: Text(
-              '${activity['maxTime']} segundos',
+              '${activity['duracion']} segundos',
               style: const TextStyle(fontSize: 12),
               overflow: TextOverflow.ellipsis,
             ),
@@ -715,7 +763,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
 
     final totalSeconds = _selectedActivities.fold<int>(
       0,
-      (sum, activity) => sum + (activity['maxTime'] as int),
+      (sum, activity) => sum + (activity['duracion'] as int),
     );
 
     if (totalSeconds < 60) {
@@ -731,7 +779,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
     if (_selectedActivities.isEmpty) return '0 tipos';
 
     final categories =
-        _selectedActivities.map((e) => e['category'] as String).toSet();
+        _selectedActivities.map((e) => e['icono'] as String).toSet();
 
     return '${categories.length} tipos';
   }
@@ -783,6 +831,49 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _colorPicker() {
+    final List<Color> colorOptions = const [
+      Color(0xFF4FC3F7), // Azul claro (Visual)
+      Color(0xFF9575CD), // Morado (Auditiva)
+      Color(0xFFFFB74D), // Naranja (Cognitiva)
+      Color(0xFF1976D2), // Azul fuerte (Tren Superior)
+      Color(0xFFC6DA23), // Verde claro (Tren Inferior)
+      Color(0xFF26C6DA), // Turquesa (Movilidad Articular)
+      Color(0xFFFF8A65), // Naranja suave (Estiramientos Generales)
+    ];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children:
+          colorOptions.map((color) {
+            final isSelected = color.value == _selectedColor.value;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedColor = color;
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                width: isSelected ? 40 : 32,
+                height: isSelected ? 40 : 32,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isSelected ? Colors.black : Colors.transparent,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    if (isSelected)
+                      BoxShadow(color: color.withOpacity(0.4), blurRadius: 8),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
     );
   }
 }

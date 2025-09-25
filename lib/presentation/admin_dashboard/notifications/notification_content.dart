@@ -22,8 +22,7 @@ class _NotificationContentState extends State<NotificationContent> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   final Map<DateTime, List<Map<String, dynamic>>> _assignedPlans = {};
-  List<Map<String, dynamic>> _availablePlans =
-      []; // Cambiar a lista vacía inicial
+  List<Map<String, dynamic>> _availablePlans = [];
 
   @override
   void initState() {
@@ -37,7 +36,7 @@ class _NotificationContentState extends State<NotificationContent> {
       debugPrint('🔄 Cargando planes de pausa...');
       final token = await AuthService.getAdminToken();
       final response = await ApiService().get(
-        '/admin/plans',
+        '/admin/process-groups/plans/all',
         query: {'token': token},
       );
 
@@ -46,16 +45,16 @@ class _NotificationContentState extends State<NotificationContent> {
         debugPrint('✅ Planes cargados: ${plans.length}');
 
         setState(() {
-          // Convertir cada plan de pausa en un plan disponible
+          // Convertir cada plan de pausa en un plan disponible (sin isAssigned)
           _availablePlans =
               plans
                   .map(
                     (plan) => {
                       'id': plan['id'],
-                      'name': plan['name'],
-                      'time': plan['time'] ?? '08:00',
+                      'name': plan['nombre'],
+                      'group': plan['groupName'] ?? '08:00',
                       'color': const Color(0xFF0067AC),
-                      'isAssigned': false,
+                      'groupId': plan['groupId'] ?? '',
                     },
                   )
                   .toList();
@@ -133,19 +132,19 @@ class _NotificationContentState extends State<NotificationContent> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildSyncedPlansSection(),
-                    const SizedBox(height: 24),
                     SizedBox(
-                      height: 500,
+                      height: 440,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Expanded(flex: 3, child: _buildAvailablePlans()),
-                          const SizedBox(width: 24),
-                          Expanded(flex: 4, child: _buildCalendar()),
+                          const SizedBox(width: 20),
+                          Expanded(flex: 3, child: _buildCalendar()),
                         ],
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    SizedBox(child: _buildPlanDetailsConsole()),
                     const SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -370,7 +369,11 @@ class _NotificationContentState extends State<NotificationContent> {
             padding: EdgeInsets.all(16),
             child: Text(
               'Planes Disponibles',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0067AC),
+              ),
             ),
           ),
           Expanded(
@@ -378,7 +381,6 @@ class _NotificationContentState extends State<NotificationContent> {
               itemCount: _availablePlans.length,
               itemBuilder: (context, index) {
                 final plan = _availablePlans[index];
-                if (plan['isAssigned']) return const SizedBox.shrink();
                 return _buildDraggablePlan(plan, true);
               },
             ),
@@ -476,7 +478,7 @@ class _NotificationContentState extends State<NotificationContent> {
                         _assignedPlans[sourceDay]?.removeWhere(
                           (p) =>
                               p['id'] == plan['id'] &&
-                              p['time'] == plan['time'],
+                              p['group'] == plan['group'],
                         );
                         if (_assignedPlans[sourceDay]?.isEmpty ?? false) {
                           _assignedPlans.remove(sourceDay);
@@ -528,20 +530,8 @@ class _NotificationContentState extends State<NotificationContent> {
           ),
         ),
         childWhenDragging: Opacity(opacity: 0.5, child: _buildPlanTile(plan)),
-        onDragStarted: () {
-          if (isTemplate) {
-            setState(() {
-              plan['isAssigned'] = true;
-            });
-          }
-        },
-        onDraggableCanceled: (_, __) {
-          if (isTemplate) {
-            setState(() {
-              plan['isAssigned'] = false;
-            });
-          }
-        },
+        onDragStarted: () {},
+        onDraggableCanceled: (_, __) {},
         child: _buildPlanTile(plan),
       ),
     );
@@ -550,7 +540,7 @@ class _NotificationContentState extends State<NotificationContent> {
   Widget _buildPlanTile(Map<String, dynamic> plan) {
     return ListTile(
       title: Text(plan['name']),
-      subtitle: Text('Hora: ${plan['time']}'),
+      subtitle: Text('Hora: ${plan['group']}'),
       leading: Icon(
         Icons.drag_indicator,
         color: plan['color'] ?? const Color(0xFF0067AC),
@@ -559,7 +549,7 @@ class _NotificationContentState extends State<NotificationContent> {
         icon: const Icon(Icons.more_vert),
         onPressed: () => _showPlanOptions(plan),
       ),
-      enabled: !plan['isAssigned'],
+      enabled: true,
     );
   }
 
@@ -594,15 +584,11 @@ class _NotificationContentState extends State<NotificationContent> {
                         _assignedPlans[_selectedDay!]?.removeWhere(
                           (p) =>
                               p['id'] == plan['id'] &&
-                              p['time'] == plan['time'],
+                              p['group'] == plan['group'],
                         );
                         if (_assignedPlans[_selectedDay!]?.isEmpty ?? false) {
                           _assignedPlans.remove(_selectedDay);
                         }
-                        final originalPlan = _availablePlans.firstWhere(
-                          (p) => p['id'] == plan['id'],
-                        );
-                        originalPlan['isAssigned'] = false;
                       });
                     },
                   ),
@@ -618,11 +604,13 @@ class _NotificationContentState extends State<NotificationContent> {
     final lastDay = DateTime(now.year + 1, now.month, now.day);
 
     return Card(
+      color: Colors.white, // Color blanco al fondo del calendario
       child: Column(
         children: [
-          SizedBox(
-            height: 320,
-            child: SingleChildScrollView(
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              height: 400,
               child: TableCalendar(
                 firstDay: firstDay,
                 lastDay: lastDay,
@@ -630,8 +618,17 @@ class _NotificationContentState extends State<NotificationContent> {
                 selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
                 onDaySelected: (selectedDay, focusedDay) {
                   setState(() {
-                    _selectedDay = selectedDay;
-                    _focusedDay = focusedDay;
+                    // Normaliza la selección de día
+                    _selectedDay = DateTime(
+                      selectedDay.year,
+                      selectedDay.month,
+                      selectedDay.day,
+                    );
+                    _focusedDay = DateTime(
+                      focusedDay.year,
+                      focusedDay.month,
+                      focusedDay.day,
+                    );
                   });
                 },
                 calendarBuilders: CalendarBuilders(
@@ -657,10 +654,6 @@ class _NotificationContentState extends State<NotificationContent> {
               ),
             ),
           ),
-          const Divider(height: 1),
-          Expanded(
-            child: SingleChildScrollView(child: _buildPlanDetailsConsole()),
-          ),
         ],
       ),
     );
@@ -671,9 +664,10 @@ class _NotificationContentState extends State<NotificationContent> {
     bool isSelected = false,
     bool isToday = false,
   }) {
-    final hasPlans = _assignedPlans[day]?.isNotEmpty ?? false;
-    final isEnabled = _isDateInRange(day);
-    final plans = _assignedPlans[day] ?? [];
+    final normalizedDay = DateTime(day.year, day.month, day.day);
+    final hasPlans = _assignedPlans[normalizedDay]?.isNotEmpty ?? false;
+    final isEnabled = _isDateInRange(normalizedDay);
+    final plans = _assignedPlans[normalizedDay] ?? [];
     final planColor =
         plans.isNotEmpty
             ? plans.first['color'] ?? const Color(0xFFC6DA23)
@@ -690,9 +684,13 @@ class _NotificationContentState extends State<NotificationContent> {
         }
 
         final isTemplate = details.data['isTemplate'] as bool;
+        final normalizedDay = DateTime(day.year, day.month, day.day);
         if (isTemplate) {
-          final isAvailable = _isTimeSlotAvailable(day, details.data['time']);
-          debugPrint('   - ¿Horario disponible?: $isAvailable');
+          final isAvailable = _isPlanIdAvailable(
+            normalizedDay,
+            details.data['id'],
+          );
+          debugPrint('   - ¿ID disponible?: $isAvailable');
           return isAvailable;
         }
 
@@ -704,25 +702,33 @@ class _NotificationContentState extends State<NotificationContent> {
 
         setState(() {
           final isTemplate = details.data['isTemplate'] as bool;
-          final sourceDay = _selectedDay;
           final plan = Map<String, dynamic>.from(details.data)
             ..remove('isTemplate');
+          final targetDay = DateTime(day.year, day.month, day.day);
+          final sourceDay =
+              _selectedDay != null
+                  ? DateTime(
+                    _selectedDay!.year,
+                    _selectedDay!.month,
+                    _selectedDay!.day,
+                  )
+                  : null;
 
           if (!isTemplate && sourceDay != null) {
             _assignedPlans[sourceDay]?.removeWhere(
-              (p) => p['id'] == plan['id'] && p['time'] == plan['time'],
+              (p) => p['id'] == plan['id'] && p['group'] == plan['group'],
             );
             if (_assignedPlans[sourceDay]?.isEmpty ?? false) {
               _assignedPlans.remove(sourceDay);
             }
           }
 
-          if (_isTimeSlotAvailable(day, plan['time'])) {
-            final plans = _assignedPlans[day] ?? [];
+          if (_isPlanIdAvailable(targetDay, plan['id'])) {
+            final plans = _assignedPlans[targetDay] ?? [];
             plans.add(plan);
-            plans.sort((a, b) => a['time'].compareTo(b['time']));
-            _assignedPlans[day] = plans;
-            _selectedDay = day;
+            plans.sort((a, b) => a['group'].compareTo(b['group']));
+            _assignedPlans[targetDay] = plans;
+            _selectedDay = targetDay;
 
             _showSnackBar(
               'Plan actualizado correctamente',
@@ -730,7 +736,7 @@ class _NotificationContentState extends State<NotificationContent> {
             );
           } else {
             _showSnackBar(
-              'Ya existe un plan para las ${plan['time']}',
+              'Ya existe un plan con este ID para este día',
               backgroundColor: Colors.orange,
             );
           }
@@ -828,7 +834,12 @@ class _NotificationContentState extends State<NotificationContent> {
       );
     }
 
-    final plans = _assignedPlans[_selectedDay] ?? [];
+    final normalizedDay = DateTime(
+      _selectedDay!.year,
+      _selectedDay!.month,
+      _selectedDay!.day,
+    );
+    final plans = _assignedPlans[normalizedDay] ?? [];
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -854,7 +865,7 @@ class _NotificationContentState extends State<NotificationContent> {
           ),
         ),
         SizedBox(
-          height: 150,
+          height: 260, // Más grande
           child:
               plans.isEmpty
                   ? const Center(
@@ -870,57 +881,19 @@ class _NotificationContentState extends State<NotificationContent> {
                     itemBuilder: (context, index) {
                       final plan = plans[index];
                       return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        color: const Color(0xFFC6DA23).withAlpha(20),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        color: const Color.fromARGB(
+                          255,
+                          255,
+                          255,
+                          255,
+                        ), // Verde claro siempre
                         child: _buildDraggablePlan(plan, false),
                       );
                     },
                   ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSyncedPlansSection() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Planes de Pausa',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF0067AC),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _loadSyncedPlans,
-                color: const Color(0xFF0067AC),
-              ),
-            ],
-          ),
-          if (_availablePlans.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(
-                child: Text(
-                  'No hay planes disponibles',
-                  style: TextStyle(color: Colors.grey),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 
@@ -971,7 +944,7 @@ class _NotificationContentState extends State<NotificationContent> {
             '📅 Planes para ${DateFormat('dd/MM/yyyy').format(date)}:',
           );
           for (var plan in plans) {
-            debugPrint('  - ${plan['name']} (${plan['time']})');
+            debugPrint('  - ${plan['name']} (${plan['group']})');
           }
         });
 
@@ -984,9 +957,8 @@ class _NotificationContentState extends State<NotificationContent> {
                   (plan) => AssignedPlanItem(
                     id: plan['id'],
                     name: plan['name'],
-                    time: plan['time'],
-                    color:
-                        (plan['color'] ?? const Color(0xFF0067AC)).toString(),
+                    time: plan['group'],
+                    group: plan['groupId'],
                   ),
                 )
                 .toList(),
@@ -1089,9 +1061,6 @@ class _NotificationContentState extends State<NotificationContent> {
       _endDateController.clear();
       _timeController.clear();
       _assignedPlans.clear();
-      for (var plan in _availablePlans) {
-        plan['isAssigned'] = false;
-      }
     });
   }
 
@@ -1139,8 +1108,9 @@ class _NotificationContentState extends State<NotificationContent> {
     }
   }
 
-  bool _isTimeSlotAvailable(DateTime day, String time) {
+  // Permite múltiples planes por día, pero sin repetir el mismo id
+  bool _isPlanIdAvailable(DateTime day, String id) {
     final plans = _assignedPlans[day] ?? [];
-    return !plans.any((plan) => plan['time'] == time);
+    return !plans.any((plan) => plan['id'] == id);
   }
 }

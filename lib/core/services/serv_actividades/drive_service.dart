@@ -4,7 +4,7 @@ import '../serv_users/auth_service.dart';
 
 class DriveService {
   static String getVideoName(Map<String, dynamic> video) {
-    return video['name'] ?? 'Sin nombre';
+    return video['id'];
   }
 
   static String? getStreamUrl(Map<String, dynamic> video) {
@@ -13,18 +13,6 @@ class DriveService {
 
   static String getEmbedUrl(String videoId) {
     return 'https://drive.google.com/file/d/$videoId/preview';
-  }
-
-  static String getThumbnailUrl(String videoId) {
-    // Si es un archivo local, usar una URL por defecto
-    if (videoId.endsWith('.mp4') ||
-        videoId.endsWith('.webm') ||
-        videoId.endsWith('.mov') ||
-        videoId.endsWith('.avi')) {
-      return 'http://localhost:4300/assets/default-video-thumbnail.png';
-    }
-    // Si es un video de Drive, usar la API de miniaturas
-    return 'http://localhost:4300/admin/drive/thumbnail/$videoId';
   }
 
   static String? extractFileId(String url) {
@@ -78,15 +66,11 @@ class DriveService {
     try {
       debugPrint('📁 Solicitando lista de videos...');
       final token = await AuthService.getAdminToken();
-
       if (token == null) {
-        debugPrint('❌ No se encontró token de autenticación');
-        throw Exception('No se encontró token de administrador');
+        throw Exception('No se encontró un token de administrador');
       }
 
-      debugPrint('🔑 Token encontrado: ${token.substring(0, 20)}...');
       final response = await ApiService().get('/admin/drive/videos');
-      debugPrint('📝 Respuesta de videos: ${response.toString()}');
 
       if (response['status'] == true && response['data'] != null) {
         final List<dynamic> rawVideos = response['data'];
@@ -94,11 +78,11 @@ class DriveService {
             .map(
               (video) => {
                 ...Map<String, dynamic>.from(video),
-                'thumbnailUrl': getThumbnailUrl(video['id']),
+                'thumbnailUrl': video['thumbnailUrl'],
                 'embedUrl': getEmbedUrl(video['id']),
                 'name': video['name'] ?? 'Sin nombre',
                 'size': video['size'] ?? 0,
-                'duration': video['videoMediaMetadata']?['durationMillis'] ?? 0,
+                'duration': video['duration'],
               },
             )
             .toList();

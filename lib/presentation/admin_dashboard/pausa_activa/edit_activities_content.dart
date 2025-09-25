@@ -349,6 +349,28 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   Widget _buildActivityCard(Map<String, dynamic> activity, bool isSelected) {
     // Definir colores por categoría
     Color getCardColor(String category) {
+      // recortar "Icons."
+      switch (category) {
+        case 'Icons.visibility':
+          return const Color(0xFF4FC3F7); // Azul claro (Visual)
+        case 'Icons.hearing':
+          return const Color(0xFF9575CD); // Morado (Auditiva)
+        case 'Icons.psychology':
+          return const Color(0xFFFFB74D); // Naranja (Cognitiva)
+        case 'Icons.accessibility_new':
+          return const Color(0xFF1976D2); // Azul fuerte (Tren Superior)
+        case 'Icons.directions_walk':
+          return const Color(0xFFC6DA23); // Verde claro (Tren Inferior)
+        case 'Icons.self_improvement':
+          return const Color(0xFF26C6DA); // Turquesa (Movilidad Articular)
+        case 'Icons.extension':
+          return const Color(
+            0xFFFF8A65,
+          ); // Naranja suave (Estiramientos Generales)
+        default:
+          break;
+      }
+
       return const Color(0xFF4CAF50); // Cambiado de withOpacity(0.1)
     }
 
@@ -356,7 +378,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
       return const Color.fromARGB(255, 255, 255, 255);
     }
 
-    final cardColor = getCardColor(activity['id']);
+    final cardColor = getCardColor(activity['icono']);
     final textColor = getTextColor(activity['id']);
     final sensorEnabled =
         activity['sensorEnabled'] is bool
@@ -609,8 +631,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
 
   IconData _getCategoryIcon(String iconString) {
     // El string viene como "Icons.psychology", extraemos el nombre del icono
-    final iconName =
-        iconString.replaceAll('"', '').replaceAll('Icons.', '').toLowerCase();
+    final iconName = iconString.split('.').last;
 
     switch (iconName) {
       case 'visibility':
@@ -619,12 +640,12 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
         return Icons.hearing;
       case 'psychology':
         return Icons.psychology;
-      case 'fitness_center':
-        return Icons.fitness_center;
-      case 'directions_run':
-        return Icons.directions_run;
       case 'accessibility_new':
         return Icons.accessibility_new;
+      case 'directions_walk':
+        return Icons.directions_walk;
+      case 'self_improvement':
+        return Icons.self_improvement;
       default:
         return Icons.extension;
     }

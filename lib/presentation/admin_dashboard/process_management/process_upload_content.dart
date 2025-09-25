@@ -17,8 +17,8 @@ class _ProcessUploadContentState extends State<ProcessUploadContent> {
   final ProcessUploadService _uploadService = ProcessUploadService();
   final ProcessGroupService _groupService = ProcessGroupService();
 
-  List<ProcessGroup> _groups = [];
-  List<Map<String, dynamic>> _pausePlans = [];
+  List<dynamic> _groups = [];
+  List _pausePlans = [];
   String? _selectedGroupId;
   final List<String> _selectedPausePlanIds = [];
   bool _isLoading = false;
@@ -38,6 +38,7 @@ class _ProcessUploadContentState extends State<ProcessUploadContent> {
 
       // Load active pause plans
       final pausePlans = await PlanService.getPlans();
+      debugPrint('📦 Pause plans loaded: ${pausePlans.length}');
 
       if (mounted) {
         setState(() {
@@ -133,8 +134,8 @@ class _ProcessUploadContentState extends State<ProcessUploadContent> {
       items:
           _groups
               .map(
-                (group) => DropdownMenuItem(
-                  value: group.id,
+                (group) => DropdownMenuItem<String>(
+                  value: group['id'] as String?,
                   child: Row(
                     children: [
                       Container(
@@ -142,11 +143,11 @@ class _ProcessUploadContentState extends State<ProcessUploadContent> {
                         height: 12,
                         margin: const EdgeInsets.only(right: 8),
                         decoration: BoxDecoration(
-                          color: group.color,
+                          color: Color(group['color']),
                           shape: BoxShape.circle,
                         ),
                       ),
-                      Text(group.name),
+                      Text(group['name']),
                     ],
                   ),
                 ),
@@ -215,9 +216,14 @@ class _ProcessUploadContentState extends State<ProcessUploadContent> {
               itemBuilder: (context, index) {
                 final plan = _pausePlans[index];
                 final planId = plan['id']?.toString() ?? '';
+                final isSelected =
+                    _selectedPausePlanIds.isNotEmpty &&
+                    _selectedPausePlanIds.first == planId;
                 return Card(
                   elevation: 0,
-                  color: Colors.green.withAlpha(13),
+                  color: Color(
+                    int.tryParse(plan['color'].toString()) ?? 0xFF4CAF50,
+                  ).withAlpha(80),
                   margin: const EdgeInsets.symmetric(vertical: 4),
                   child: RadioListTile<String>(
                     value: planId,
@@ -225,26 +231,21 @@ class _ProcessUploadContentState extends State<ProcessUploadContent> {
                         _selectedPausePlanIds.isNotEmpty
                             ? _selectedPausePlanIds.first
                             : null,
-                    onChanged: (value) {
-                      debugPrint('🔄 Cambio en selección de Plan de Pausa:');
-                      debugPrint('- Plan seleccionado: $value');
+                    onChanged: (selectedId) {
                       setState(() {
-                        _selectedPausePlanIds.clear();
-                        if (value != null) {
-                          _selectedPausePlanIds.add(value);
-                        }
+                        _selectedPausePlanIds
+                          ..clear()
+                          ..add(selectedId ?? '');
                       });
-                      debugPrint(
-                        '- Planes seleccionados: $_selectedPausePlanIds',
-                      );
                     },
                     title: Text(
-                      plan['name'] ?? 'Sin nombre',
+                      plan['nombre'] ?? 'Sin nombre',
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    subtitle: Text(plan['description'] ?? 'Sin descripción'),
+                    subtitle: Text(plan['descripcion'] ?? 'Sin descripción'),
                     activeColor: Colors.green[700],
-                    selected: _selectedPausePlanIds.contains(planId),
+                    selected: isSelected,
+                    controlAffinity: ListTileControlAffinity.leading,
                   ),
                 );
               },

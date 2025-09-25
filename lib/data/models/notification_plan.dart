@@ -4,13 +4,13 @@ class AssignedPlanItem {
   final String id;
   final String name;
   final String time;
-  final String color;
+  final String group;
 
   AssignedPlanItem({
     required this.id,
     required this.name,
     required this.time,
-    required this.color,
+    required this.group,
   });
 
   factory AssignedPlanItem.fromJson(Map<String, dynamic> json) {
@@ -18,12 +18,17 @@ class AssignedPlanItem {
       id: json['id'],
       name: json['name'],
       time: json['time'],
-      color: json['color'],
+      group: json['group'],
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'time': time, 'color': color};
+    return {
+      'id': id,
+      'name': name,
+      'time': time,
+      'group': group,
+    };
   }
 }
 

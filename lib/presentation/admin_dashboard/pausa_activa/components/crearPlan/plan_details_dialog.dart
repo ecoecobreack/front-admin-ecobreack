@@ -25,37 +25,18 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
     try {
       setState(() => _isLoading = true);
 
-      // Obtener todas las actividades
-      final allActivities = await ActivityService.getActivities();
-      
-      // Obtener los IDs de las actividades del plan
-      final planActivities = List<Map<String, dynamic>>.from(widget.plan['activities'] ?? []);
-      
-      // Mapear las actividades del plan con sus detalles completos
-      final activitiesWithDetails = planActivities.map((planActivity) {
-        // Buscar la actividad completa que corresponde al ID
-        final fullActivity = allActivities.firstWhere(
-          (activity) => activity['id'] == (planActivity['activityId'] ?? planActivity['id']),
-          orElse: () => {
-            'id': planActivity['activityId'] ?? planActivity['id'],
-            'name': 'Actividad no encontrada',
-            'category': 'Sin categoría',
-            'maxTime': 0,
-          },
-        );
-        
-        return {
-          ...fullActivity,
-          'order': planActivity['order'] ?? 0,
-        };
-      }).toList();
 
-      // Ordenar por el campo 'order'
-      activitiesWithDetails.sort((a, b) => (a['order'] as int).compareTo(b['order'] as int));
+      // Obtener los IDs de las actividades del plan
+      final planActivities = List<Map<String, dynamic>>.from(
+        widget.plan['ejercicios'] ?? [],
+      );
+
+      // Mapear las actividades del plan con sus detalles completos
+
 
       if (mounted) {
         setState(() {
-          _activities = activitiesWithDetails;
+          _activities = planActivities;
           _isLoading = false;
         });
       }
@@ -95,7 +76,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
 
     final totalDuration = _activities.fold<int>(
       0,
-      (sum, activity) => sum + (activity['maxTime'] as int? ?? 0),
+      (sum, activity) => sum + (activity['duracion'] as int? ?? 0),
     );
 
     return Dialog(
@@ -132,25 +113,19 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
       decoration: BoxDecoration(
         color: const Color(0xFF0067AC).withAlpha(5),
         border: Border(
-          bottom: BorderSide(
-            color: const Color(0xFF0067AC).withAlpha(20),
-          ),
+          bottom: BorderSide(color: const Color(0xFF0067AC).withAlpha(20)),
         ),
       ),
       child: Row(
         children: [
-          const Icon(
-            Icons.playlist_play,
-            color: Color(0xFF0067AC),
-            size: 32,
-          ),
+          const Icon(Icons.playlist_play, color: Color(0xFF0067AC), size: 32),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.plan['name'] ?? 'Sin nombre',
+                  widget.plan['nombre'] ?? 'Sin nombre',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -159,10 +134,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
                 ),
                 Text(
                   'Creado el ${_formatDate(widget.plan['createdAt'])}',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
               ],
             ),
@@ -174,11 +146,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
                 color: Colors.red.shade400,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.close,
-                color: Colors.white,
-                size: 20,
-              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 20),
             ),
             onPressed: () => Navigator.pop(context),
             tooltip: 'Cerrar',
@@ -195,9 +163,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFF0067AC).withAlpha(20),
-        ),
+        border: Border.all(color: const Color(0xFF0067AC).withAlpha(20)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -212,11 +178,8 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
           ),
           const SizedBox(height: 12),
           Text(
-            widget.plan['description'] ?? 'Sin descripción',
-            style: TextStyle(
-              color: Colors.grey[700],
-              height: 1.5,
-            ),
+            widget.plan['descripcion'] ?? 'Sin descripción',
+            style: TextStyle(color: Colors.grey[700], height: 1.5),
           ),
         ],
       ),
@@ -252,9 +215,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFF0067AC).withAlpha(20),
-        ),
+        border: Border.all(color: const Color(0xFF0067AC).withAlpha(20)),
       ),
       child: Row(
         children: [
@@ -281,33 +242,27 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  activity['name'] ?? 'Sin nombre',
+                  activity['nombre'] ?? 'Sin nombre',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  activity['category'] ?? 'Sin categoría',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
+                  activity['descripcion'] ?? 'Sin Descripción',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
                 ),
               ],
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFF0067AC).withAlpha(20),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
-              '${activity['maxTime']} segundos',
+              '${activity['duracion']} segundos',
               style: const TextStyle(
                 color: Color(0xFF0067AC),
                 fontWeight: FontWeight.w500,
@@ -319,15 +274,17 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
     );
   }
 
-  Widget _buildFooter(BuildContext context, int totalDuration, int activityCount) {
+  Widget _buildFooter(
+    BuildContext context,
+    int totalDuration,
+    int activityCount,
+  ) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(
-          top: BorderSide(
-            color: const Color(0xFF0067AC).withAlpha(20),
-          ),
+          top: BorderSide(color: const Color(0xFF0067AC).withAlpha(20)),
         ),
       ),
       child: Row(
@@ -349,20 +306,14 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red.shade400,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
             child: const Text(
               'Cerrar',
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
             ),
           ),
         ],
@@ -380,9 +331,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
       decoration: BoxDecoration(
         color: const Color(0xFF0067AC).withAlpha(5),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: const Color(0xFF0067AC).withAlpha(20),
-        ),
+        border: Border.all(color: const Color(0xFF0067AC).withAlpha(20)),
       ),
       child: Row(
         children: [
@@ -393,10 +342,7 @@ class _PlanDetailsDialogState extends State<PlanDetailsDialog> {
             children: [
               Text(
                 label,
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
               ),
               Text(
                 value,

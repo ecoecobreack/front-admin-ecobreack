@@ -38,25 +38,6 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
     super.dispose();
   }
 
-  String _getIconString(String? categoria) {
-    switch (categoria) {
-      case 'Visibilidad':
-        return 'Icons.visibility';
-      case 'Audición':
-        return 'Icons.hearing';
-      case 'Psicología':
-        return 'Icons.psychology';
-      case 'Accesibilidad':
-        return 'Icons.accessibility_new';
-      case 'Movilidad':
-        return 'Icons.directions_walk';
-      case 'Mejora Personal':
-        return 'Icons.self_improvement';
-      default:
-        return 'Icons.help_outline';
-    }
-  }
-
   Future<void> _showVideoSelector() async {
     final result = await showDialog<Map<String, dynamic>>(
       context: context,
@@ -109,6 +90,25 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
     return Future.value();
   }
 
+  String getIconStringFromCategory(String? category) {
+    switch (category) {
+      case 'Visibilidad':
+        return 'Icons.visibility';
+      case 'Audición':
+        return 'Icons.hearing';
+      case 'Psicología':
+        return 'Icons.psychology';
+      case 'Accesibilidad':
+        return 'Icons.accessibility_new';
+      case 'Movilidad':
+        return 'Icons.directions_walk';
+      case 'Mejora Personal':
+        return 'Icons.self_improvement';
+      default:
+        return 'Icons.help_outline';
+    }
+  }
+
   Future<void> _saveActivity() async {
     try {
       await _validateTimeInputs();
@@ -153,7 +153,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
         videoUrl: _videoLinkController.text,
         maxTime: int.parse(_maxTimeController.text),
         steps: _steps,
-        icon: _getIconString(_selectedCategory),
+        icon: getIconStringFromCategory(_selectedCategory),
         sensorEnabled: _sensorEnabled,
       );
 
@@ -331,10 +331,14 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
             hintText: hint,
             helperText: helperText,
             helperStyle: const TextStyle(color: Colors.grey),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFF0067AC), width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
             ),
           ),
         ),
@@ -644,7 +648,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                   value: _selectedCategory,
                   isExpanded: true,
                   decoration: InputDecoration(
-                    hintText: 'Seleccione un icono para la categoría',
+                    hintText: 'Seleccione la categoría',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

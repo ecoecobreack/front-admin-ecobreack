@@ -11,7 +11,7 @@ class ProcessGroupService {
 
   final ApiService _apiService = ApiService();
 
-  Future<List<ProcessGroup>> getGroups() async {
+  Future<List<dynamic>> getGroups() async {
     try {
       debugPrint('🔄 Obteniendo grupos de proceso...');
       final token = await AuthService.getAdminToken();
@@ -26,12 +26,7 @@ class ProcessGroupService {
       );
 
       if (response['status'] == true) {
-        final groups =
-            (response['data'] as List)
-                .map((group) => ProcessGroup.fromJson(group))
-                .toList();
-        debugPrint('✅ ${groups.length} grupos obtenidos');
-        return groups;
+        return response['data'];
       }
 
       throw Exception(response['message'] ?? 'Error obteniendo grupos');
@@ -41,10 +36,10 @@ class ProcessGroupService {
     }
   }
 
-  Future<ProcessGroup> createGroup({
+  Future<Map<String, dynamic>> createGroup({
     required String name,
     required String description,
-    required Color color,
+    required int color,
     List<User> members = const [],
   }) async {
     try {
@@ -55,8 +50,7 @@ class ProcessGroupService {
         throw Exception('No autorizado');
       }
 
-      final hexColor =
-          color.toHex(); // Usando el método de extensión actualizado
+      final hexColor = color; // Usando el valor numérico ARGB del color
 
       final response = await _apiService.post(
         endpoint: '/admin/process-groups',
@@ -71,7 +65,7 @@ class ProcessGroupService {
 
       if (response['status'] == true) {
         debugPrint('✅ Grupo creado exitosamente');
-        return ProcessGroup.fromJson(response['data']);
+        return response['data'];
       }
 
       throw Exception(response['message'] ?? 'Error creando grupo');
@@ -81,9 +75,9 @@ class ProcessGroupService {
     }
   }
 
-  Future<ProcessGroup> updateGroup(ProcessGroup group) async {
+  Future<Map<String, dynamic>> updateGroup(Map<String, dynamic> group) async {
     try {
-      debugPrint('🔄 Actualizando grupo ${group.id}...');
+      debugPrint('🔄 Actualizando grupo ${group['id']}...');
       final token = await AuthService.getAdminToken();
 
       if (token == null) {
@@ -91,8 +85,8 @@ class ProcessGroupService {
       }
 
       final response = await _apiService.put(
-        endpoint: '/admin/process-groups/${group.id}',
-        data: group.toJson(),
+        endpoint: '/admin/process-groups/${group['id']}',
+        data: group,
         token: token,
       );
 
@@ -100,12 +94,42 @@ class ProcessGroupService {
 
       if (response['status'] == true) {
         debugPrint('✅ Grupo actualizado exitosamente');
-        return ProcessGroup.fromJson(response['data']);
+        return response['data'];
       }
 
       throw Exception(response['message'] ?? 'Error actualizando grupo');
     } catch (e) {
       debugPrint('❌ Error en updateGroup: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deletePlans(List<String> planIds, String groupId) async {
+    try {
+      debugPrint('🗑️ Eliminando planes: $planIds');
+
+      if (planIds.isEmpty) {
+        throw Exception('No se proporcionaron IDs de planes para eliminar');
+      }
+
+      final token = await AuthService.getAdminToken();
+      if (token == null) {
+        throw Exception('No se encontró token de autenticación');
+      }
+
+      final response = await _apiService.delete(
+        endpoint: 'admin/process-groups/$groupId/plans', // Sin slash inicial
+        body: { 'ids': planIds },
+        token: token,
+      );
+
+      if (response['status'] != true) {
+        throw Exception(response['message'] ?? 'Error eliminando los planes');
+      }
+
+      debugPrint('✅ Planes eliminados correctamente');
+    } catch (e) {
+      debugPrint('❌ Error en deletePlans: $e');
       rethrow;
     }
   }
@@ -139,7 +163,7 @@ class ProcessGroupService {
     }
   }
 
-  Future<ProcessGroup> updateGroupMembers(
+  Future<Map<String, dynamic>> updateGroupMembers(
     String groupId,
     List<User> members,
   ) async {
@@ -168,7 +192,7 @@ class ProcessGroupService {
       debugPrint('📝 Respuesta del servidor: ${response.toString()}');
       if (response['status'] == true) {
         debugPrint('✅ Miembros actualizados exitosamente');
-        return ProcessGroup.fromJson(response['data']);
+        return response['data'];
       }
 
       throw Exception(response['message'] ?? 'Error actualizando miembros');

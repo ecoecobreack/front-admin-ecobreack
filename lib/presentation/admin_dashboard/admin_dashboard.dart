@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sst_admin/presentation/admin_dashboard/user_admin/motivos_page.dart';
 import '../../core/routes/app_routes.dart';
 import './user_admin/admin_users_page.dart';
 import 'pausa_activa/create_activity_content.dart';
@@ -21,6 +22,7 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   Widget? _currentContent;
   bool _pausaActivaExpanded = false;
+  bool _usuariosExpanded = false;
   bool _notificationsExpanded = false;
   bool _processManagementExpanded = false; // Add this line
   bool _isCollapsed = false; // New state for sidebar collapse
@@ -38,7 +40,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            width: _isCollapsed ? 65 : 250,
+            width: _isCollapsed ? 65 : 280,
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
@@ -53,28 +55,29 @@ class _AdminDashboardState extends State<AdminDashboard> {
               children: [
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 250),
-                  transitionBuilder: (child, animation) => FadeTransition(
-                    opacity: animation,
-                    child: SizeTransition(
-                      sizeFactor: animation,
-                      axis: Axis.horizontal,
-                      child: child,
-                    ),
-                  ),
-                  child: _isCollapsed
-                      ? _SidebarHeaderCollapsed(
-                          key: const ValueKey('collapsed'),
-                          onExpand: () => setState(() => _isCollapsed = false),
-                        )
-                      : _SidebarHeaderExpanded(
-                          key: const ValueKey('expanded'),
-                          onCollapse: () => setState(() => _isCollapsed = true),
+                  transitionBuilder:
+                      (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: SizeTransition(
+                          sizeFactor: animation,
+                          axis: Axis.horizontal,
+                          child: child,
                         ),
+                      ),
+                  child:
+                      _isCollapsed
+                          ? _SidebarHeaderCollapsed(
+                            key: const ValueKey('collapsed'),
+                            onExpand:
+                                () => setState(() => _isCollapsed = false),
+                          )
+                          : _SidebarHeaderExpanded(
+                            key: const ValueKey('expanded'),
+                            onCollapse:
+                                () => setState(() => _isCollapsed = true),
+                          ),
                 ),
-                if (!_isCollapsed) ...[
-                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
-                  const SizedBox(height: 16),
-                ],
+                const SizedBox(height: 16),
                 Expanded(child: _buildMenuItems()),
                 const Divider(height: 1, color: Color(0xFFEEEEEE)),
                 if (_isCollapsed)
@@ -99,12 +102,32 @@ class _AdminDashboardState extends State<AdminDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Column(
           children: [
-            _buildMenuItem(
-              icon: Icons.people,
+            _buildExpandableMenuItem(
+              icon: Icons.sports_gymnastics,
               title: 'Usuarios',
-              onTap: () => setState(() {
-                _currentContent = const AdminUsersPage();
-              }),
+              isExpanded: _usuariosExpanded,
+              onExpansionChanged: (value) {
+                setState(() => _usuariosExpanded = value);
+              },
+              children: [
+                _buildSubMenuItem(
+                  icon: Icons.people,
+                  title: 'Gestion de Usuarios',
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const AdminUsersPage();
+                      }),
+                ),
+                _buildSubMenuItem(
+                  icon: Icons.label_important,
+                  title: 'Motivos',
+                  onTap: () {
+                    setState(() {
+                      _currentContent = const MotivosPage();
+                    });
+                  },
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             _buildExpandableMenuItem(
@@ -118,37 +141,42 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 _buildSubMenuItem(
                   title: 'Crear Actividad',
                   icon: Icons.add_circle_outline,
-                  onTap: () => setState(() {
-                    _currentContent = const CreateActivityContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const CreateActivityContent();
+                      }),
                 ),
                 _buildSubMenuItem(
                   title: 'Editar Actividades',
                   icon: Icons.edit_note,
-                  onTap: () => setState(() {
-                    _currentContent = const EditActivitiesContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const EditActivitiesContent();
+                      }),
                 ),
                 _buildSubMenuItem(
                   title: 'Crear Plan de Pausas',
                   icon: Icons.playlist_add,
-                  onTap: () => setState(() {
-                    _currentContent = const CreatePlanContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const CreatePlanContent();
+                      }),
                 ),
                 _buildSubMenuItem(
-                  title: 'Planes Creados',
+                  title: 'Planes de Pausas Creados',
                   icon: Icons.playlist_play,
-                  onTap: () => setState(() {
-                    _currentContent = const EditPlansContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const EditPlansContent();
+                      }),
                 ),
                 _buildSubMenuItem(
                   title: 'Historial de Pausas',
                   icon: Icons.history,
-                  onTap: () => setState(() {
-                    _currentContent = const HistoryContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const HistoryContent();
+                      }),
                 ),
               ],
             ),
@@ -164,16 +192,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 _buildSubMenuItem(
                   title: 'Crear Plan de Notificaciones',
                   icon: Icons.add_alarm,
-                  onTap: () => setState(() {
-                    _currentContent = const NotificationContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const NotificationContent();
+                      }),
                 ),
                 _buildSubMenuItem(
                   title: 'Planes Guardados',
                   icon: Icons.access_time,
-                  onTap: () => setState(() {
-                    _currentContent = const SavedNotificationPlans();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const SavedNotificationPlans();
+                      }),
                 ),
               ],
             ),
@@ -189,16 +219,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 _buildSubMenuItem(
                   title: 'Subir Procesos',
                   icon: Icons.upload_file,
-                  onTap: () => setState(() {
-                    _currentContent = const ProcessUploadContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const ProcessUploadContent();
+                      }),
                 ),
                 _buildSubMenuItem(
                   title: 'Grupos de Trabajo',
                   icon: Icons.group_work,
-                  onTap: () => setState(() {
-                    _currentContent = const ProcessGroupsContent();
-                  }),
+                  onTap:
+                      () => setState(() {
+                        _currentContent = const ProcessGroupsContent();
+                      }),
                 ),
               ],
             ),
@@ -215,7 +247,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     bool isDisabled = false,
   }) {
     final color = isDisabled ? Colors.grey : const Color(0xFF0067AC);
-    
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(10),
@@ -227,20 +259,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           height: 45,
-          padding: EdgeInsets.symmetric(
-            horizontal: _isCollapsed ? 8 : 12,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          padding: EdgeInsets.symmetric(horizontal: _isCollapsed ? 8 : 12),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: _isCollapsed ? 22 : 20,
-              ),
+              Icon(icon, color: color, size: _isCollapsed ? 22 : 20),
               if (!_isCollapsed) ...[
                 const SizedBox(width: 12),
                 Expanded(
@@ -289,9 +313,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: isExpanded 
-              ? const Color(0xFF0067AC).withAlpha(13)
-              : Colors.transparent,
+          color:
+              isExpanded
+                  ? const Color.fromARGB(255, 255, 255, 255).withAlpha(13)
+                  : const Color.fromARGB(0, 255, 255, 255),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
@@ -357,11 +382,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               SizedBox(
                 width: 24,
                 height: 24,
-                child: Icon(
-                  icon,
-                  color: const Color(0xFF0067AC),
-                  size: 18,
-                ),
+                child: Icon(icon, color: const Color(0xFF0067AC), size: 18),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -401,7 +422,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       child: ElevatedButton.icon(
         onPressed: () => _showExitConfirmation(context),
         icon: const Icon(Icons.exit_to_app, color: Colors.white, size: 20),
@@ -413,9 +434,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           backgroundColor: Colors.red.shade400,
           padding: const EdgeInsets.symmetric(vertical: 12),
           minimumSize: const Size(double.infinity, 0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         ),
       ),
     );
@@ -426,18 +445,55 @@ class _AdminDashboardState extends State<AdminDashboard> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('¿Seguro que quieres salir?'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+          title: const Text(
+            '¿Seguro que quieres salir?',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          content: const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Text(
+              'Esta acción cerrará tu sesión actual.',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          actionsPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
+              child: const Text('Cancelar', style: TextStyle(fontSize: 16)),
             ),
-            TextButton(
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red.shade400,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pushReplacementNamed(context, AdminRoutes.login);
               },
-              child: const Text('Salir'),
+              child: const Text(
+                'Salir',
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
             ),
           ],
         );
@@ -457,10 +513,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withAlpha(5),
-                  blurRadius: 8,
-                ),
+                BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 8),
               ],
             ),
             child: Row(
@@ -470,6 +523,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w500,
+                    color: Color(0xFF0067AC),
                   ),
                 ),
                 const Spacer(),
@@ -501,19 +555,20 @@ class _SidebarHeaderExpanded extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 60,
+      height: 90,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
         children: [
           SizedBox(
-            width: 24,
-            height: 24,
+            width: 64,
+            height: 82,
             child: Image.asset(
               'assets/imagenes/LOGOECOBREACK.png',
-              fit: BoxFit.contain,
+              height: 64,
+              width: 64,
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 1),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,7 +577,7 @@ class _SidebarHeaderExpanded extends StatelessWidget {
                 const Text(
                   'ECOBREACK',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF0067AC),
                   ),
@@ -530,10 +585,7 @@ class _SidebarHeaderExpanded extends StatelessWidget {
                 ),
                 Text(
                   'Panel Admin',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 10, color: Colors.grey),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -570,16 +622,17 @@ class _SidebarHeaderCollapsed extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 48,
+      height: 90,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 20,
-            height: 20,
+            width: 30,
+            height: 30,
             child: Image.asset(
               'assets/imagenes/LOGOECOBREACK.png',
-              fit: BoxFit.contain,
+              height: 30,
+              width: 30,
             ),
           ),
           const SizedBox(height: 4),
@@ -632,10 +685,7 @@ class _WelcomeContent extends StatelessWidget {
           const SizedBox(height: 8),
           const Text(
             'Selecciona una opción del menú para comenzar',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.grey, fontSize: 16),
           ),
         ],
       ),

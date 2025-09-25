@@ -3,7 +3,6 @@ import '../../../core/services/serv_users/user_service.dart';
 import '../../../core/services/serv_actividades/process_group_service.dart';
 import './components/user_selection_dialog.dart';
 import '../../../data/models/user.dart';
-import '../../../data/models/process_group.dart';
 
 class ProcessGroupsContent extends StatefulWidget {
   const ProcessGroupsContent({super.key});
@@ -18,7 +17,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
   final _descriptionController = TextEditingController();
   final _searchController = TextEditingController();
   final ProcessGroupService _groupService = ProcessGroupService();
-  final List<ProcessGroup> _groups = [];
+  final List<dynamic> _groups = [];
   final _users = <User>[];
   Color _selectedColor = const Color(0xFF0067AC);
   bool _isLoading = false;
@@ -174,7 +173,9 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
     );
   }
 
-  Widget _buildGroupCard(ProcessGroup group) {
+  Widget _buildGroupCard(group) {
+    final members = (group['members'] is List) ? group['members'] : [];
+    final plans = (group['plans'] is List) ? group['plans'] : [];
     return InkWell(
       onTap: () => _showGroupDetailsDialog(group),
       child: Card(
@@ -185,10 +186,10 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             color: const Color(0xFFFAFAFA),
-            border: Border.all(color: group.color, width: 2),
+            border: Border.all(color: Color(group['color']), width: 2),
             boxShadow: [
               BoxShadow(
-                color: group.color.withAlpha(26), // 0.1 * 255 ≈ 26
+                color: Color(group['color']).withAlpha(26), // 0.1 * 255 ≈ 26
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -202,10 +203,10 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: group.color.withAlpha(26), // 0.1 * 255 ≈ 26
+                      color: Color(group['color']).withAlpha(26),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(Icons.group, color: group.color),
+                    child: Icon(Icons.group, color: Color(group['color'])),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -213,7 +214,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          group.name,
+                          group['name'],
                           style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -221,7 +222,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                           ),
                         ),
                         Text(
-                          '${group.members.length} miembros',
+                          '${members.length} miembros',
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 13,
@@ -238,11 +239,11 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: group.color.withAlpha(13), // 0.05 * 255 ≈ 13
+                  color: Color(group['color']).withAlpha(13),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  group.description,
+                  group['description'],
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -252,6 +253,42 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              // Subtítulo para planes asignados con número al lado
+              Padding(
+                padding: const EdgeInsets.only(left: 4, bottom: 2),
+                child: Row(
+                  children: [
+                    Text(
+                      'Planes Asignados',
+                      style: TextStyle(
+                        color: Color(group['color']),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Color(group['color']).withAlpha(26),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${plans.length}',
+                        style: TextStyle(
+                          color: Color(group['color']),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -259,7 +296,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
     );
   }
 
-  Widget _buildPopupMenu(ProcessGroup group) {
+  Widget _buildPopupMenu(group) {
     return Theme(
       data: Theme.of(context).copyWith(
         popupMenuTheme: PopupMenuThemeData(
@@ -270,7 +307,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
         ),
       ),
       child: PopupMenuButton(
-        icon: Icon(Icons.more_vert, color: group.color),
+        icon: Icon(Icons.more_vert, color: Color(group['color'])),
         position: PopupMenuPosition.under,
         offset: const Offset(0, 8),
         itemBuilder:
@@ -284,10 +321,14 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: group.color.withAlpha(26),
+                          color: Color(group['color']).withAlpha(26),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(Icons.group, color: group.color, size: 20),
+                        child: Icon(
+                          Icons.group,
+                          color: Color(group['color']),
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -379,7 +420,10 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
     );
   }
 
-  void _showGroupDetailsDialog(ProcessGroup group) {
+  void _showGroupDetailsDialog(group) {
+    final members = (group['members'] is List) ? group['members'] : [];
+    final membersCount = members.length;
+    final plans = (group['plans'] is List) ? group['plans'] : [];
     showDialog(
       context: context,
       builder:
@@ -395,7 +439,9 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: group.color.withAlpha(26), // 0.1 * 255 ≈ 26
+                    color: Color(
+                      group['color'],
+                    ).withAlpha(26), // 0.1 * 255 ≈ 26
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -408,28 +454,34 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: group.color.withAlpha(26), // 0.1 * 255 ≈ 26
+                      color: Color(
+                        group['color'],
+                      ).withAlpha(26), // 0.1 * 255 ≈ 26
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.group, color: group.color, size: 32),
+                        Icon(
+                          Icons.group,
+                          color: Color(group['color']),
+                          size: 32,
+                        ),
                         const SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                group.name,
+                                group['name'],
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: group.color,
+                                  color: Color(group['color']),
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                group.description,
+                                group['description'],
                                 style: TextStyle(
                                   color: Colors.grey[700],
                                   fontSize: 14,
@@ -448,27 +500,84 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: group.color,
+                      color: Color(group['color']),
                     ),
                   ),
                   const SizedBox(height: 16),
                   ConstrainedBox(
                     constraints: const BoxConstraints(maxHeight: 400),
+                    child:
+                        members != null && members.isNotEmpty
+                            ? ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: membersCount,
+                              itemBuilder: (context, index) {
+                                final user = members[index];
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Color(
+                                      user['avatarColor'] as int? ?? 0xFF0067AC,
+                                    ),
+                                    child: Text(
+                                      user['name'][0].toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(user['name']),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(user['email']),
+                                      if (user['telefono'] != null &&
+                                          user['telefono']
+                                              .toString()
+                                              .isNotEmpty)
+                                        const SizedBox(height: 4),
+                                      Text(
+                                        'Teléfono: ${user['telefono']}',
+                                        style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            )
+                            : const Text(
+                              'No hay miembros en este grupo.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Planes Asignados',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(group['color']),
+                    ),
+                  ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 400),
                     child: ListView.builder(
                       shrinkWrap: true,
-                      itemCount: group.members.length,
+                      itemCount: plans.length,
                       itemBuilder: (context, index) {
-                        final user = group.members[index];
+                        final plan = group['plans'][index];
                         return ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: group.color,
-                            child: Text(
-                              user.name[0].toUpperCase(),
-                              style: const TextStyle(color: Colors.white),
-                            ),
+                            backgroundColor: Color(group['color']),
+                            child: Icon(Icons.assignment, color: Colors.white),
                           ),
-                          title: Text(user.name),
-                          subtitle: Text(user.email),
+                          title: Text(plan['nombre']),
+                          subtitle: Text(
+                            plan['estado'] == true ? 'Activo' : 'Inactivo',
+                          ),
                         );
                       },
                     ),
@@ -733,7 +842,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
         final newGroup = await _groupService.createGroup(
           name: _groupNameController.text,
           description: _descriptionController.text,
-          color: _selectedColor,
+          color: _selectedColor.value, // Guardar como int
         );
 
         if (!mounted) return;
@@ -752,10 +861,13 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
     }
   }
 
-  void _editGroup(ProcessGroup group) {
-    _groupNameController.text = group.name;
-    _descriptionController.text = group.description;
-    _selectedColor = group.color;
+  void _editGroup(group) {
+    List<dynamic> plans =
+        (group['plans'] is List) ? List<dynamic>.from(group['plans']) : [];
+    final List<String> _plansToDelete = [];
+    _groupNameController.text = group['name'];
+    _descriptionController.text = group['description'];
+    _selectedColor = Color(group['color']);
 
     showDialog(
       context: context,
@@ -765,7 +877,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Container(
-              width: 500,
+              width: 700,
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -866,6 +978,65 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 24),
+                        _buildFormLabel('Planes Asignados'),
+                        const SizedBox(height: 8),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: plans.length,
+                          itemBuilder: (context, index) {
+                            final plan = plans[index];
+                            final isMarkedForDelete = _plansToDelete.contains(
+                              plan['id'],
+                            );
+                            return ListTile(
+                              leading: Icon(
+                                Icons.assignment,
+                                color: Colors.grey[700],
+                              ),
+                              title: Text(plan['nombre'] ?? ''),
+                              subtitle: Text(
+                                plan['estado'] == true ? 'Activo' : 'Inactivo',
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  isMarkedForDelete
+                                      ? Icons.delete_forever
+                                      : Icons.delete,
+                                  color:
+                                      isMarkedForDelete
+                                          ? Colors.red
+                                          : Colors.grey,
+                                ),
+                                tooltip:
+                                    isMarkedForDelete
+                                        ? 'Desmarcar para eliminar'
+                                        : 'Eliminar plan',
+                                onPressed: () {
+                                  if (isMarkedForDelete) {
+                                    _plansToDelete.remove(plan['id']);
+                                  } else {
+                                    _plansToDelete.add(plan['id']);
+                                  }
+                                  // Forzar rebuild del dialog
+                                  (context as Element).markNeedsBuild();
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                        if (_plansToDelete.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              'Planes marcados para eliminar: ${_plansToDelete.join(", ")}',
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
                       ],
                     ),
                   ),
@@ -893,12 +1064,26 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                         onPressed: () async {
                           if (_formKey.currentState!.validate()) {
                             try {
-                              final updatedGroup = ProcessGroup(
-                                id: group.id,
-                                name: _groupNameController.text,
-                                description: _descriptionController.text,
-                                color: _selectedColor,
-                                members: group.members,
+                              final updatedGroup = {
+                                'id': group['id'],
+                                'name': _groupNameController.text,
+                                'description': _descriptionController.text,
+                                'color':
+                                    _selectedColor.value, // Guardar como int
+                                'plans': group['plans'],
+                              };
+
+                              // Eliminar planes marcados
+
+                              if (_plansToDelete.isNotEmpty) {
+                                await _groupService.deletePlans(
+                                  _plansToDelete,
+                                  group['id'],
+                                );
+                              }
+
+                              debugPrint(
+                                '🔄 Actualizando grupo: $updatedGroup',
                               );
 
                               final result = await _groupService.updateGroup(
@@ -909,7 +1094,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
 
                               setState(() {
                                 final index = _groups.indexWhere(
-                                  (g) => g.id == group.id,
+                                  (g) => g['id'] == group['id'],
                                 );
                                 if (index != -1) {
                                   _groups[index] = result;
@@ -953,23 +1138,26 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
     );
   }
 
-  Future<void> _showManageUsersDialog(ProcessGroup group) async {
+  Future<void> _showManageUsersDialog(group) async {
     try {
       debugPrint('🔄 Abriendo diálogo de gestión de usuarios');
       debugPrint('📊 Estado actual del grupo:');
-      debugPrint('- ID: ${group.id}');
-      debugPrint('- Nombre: ${group.name}');
-      debugPrint('- Miembros actuales: ${group.members.length}');
+      debugPrint('- ID: ${group['id']}');
+      debugPrint('- Nombre: ${group['name']}');
       debugPrint('- Total usuarios disponibles: ${_users.length}');
 
+      final currentMembers =
+          (group['members'] is List)
+              ? group['members'].map<User>((u) => User.fromJson(u)).toList()
+              : <User>[];
       final result = await showDialog<List<User>>(
         context: context,
         builder:
             (context) => UserSelectionDialog(
               allUsers: _users,
-              selectedUsers: group.members,
-              groupColor: group.color,
-              groupName: group.name,
+              selectedUsers: currentMembers,
+              groupColor: Color(group['color']),
+              groupName: group['name'],
             ),
       );
 
@@ -979,26 +1167,44 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
         // Filtrar usuarios con id vacío
         final filteredResult = result.where((u) => u.id.isNotEmpty).toList();
 
+        // Combinar los usuarios previamente asignados con los nuevos seleccionados, evitando duplicados
+        final updatedMembers = <User>[];
+        final idsSet = <String>{};
+        // Agregar los actuales
+        for (final u in currentMembers) {
+          if (u.id.isNotEmpty && !idsSet.contains(u.id)) {
+            updatedMembers.add(u);
+            idsSet.add(u.id);
+          }
+        }
+        // Agregar los nuevos seleccionados
+        for (final u in filteredResult) {
+          if (u.id.isNotEmpty && !idsSet.contains(u.id)) {
+            updatedMembers.add(u);
+            idsSet.add(u.id);
+          }
+        }
+
         try {
           final updatedGroup = await _groupService.updateGroupMembers(
-            group.id,
-            filteredResult,
+            group['id'],
+            updatedMembers,
           );
 
           if (!mounted) return;
 
           setState(() {
-            final index = _groups.indexWhere((g) => g.id == group.id);
+            final index = _groups.indexWhere((g) => g['id'] == group['id']);
             if (index != -1) {
               _groups[index] = updatedGroup;
             }
           });
 
           debugPrint(
-            '✅ Grupo actualizado con ${filteredResult.length} miembros',
+            '✅ Grupo actualizado con ${updatedMembers.length} miembros',
           );
           debugPrint(
-            '📊 IDs de miembros: ${filteredResult.map((u) => u.id).join(" ,")}',
+            '📊 IDs de miembros: ${updatedMembers.map((u) => u.id).join(" ,")}',
           );
         } catch (e) {
           if (!mounted) return;
@@ -1012,7 +1218,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
     }
   }
 
-  void _deleteGroup(ProcessGroup group) {
+  void _deleteGroup(Map<String, dynamic> group) {
     showDialog(
       context: context,
       builder:
@@ -1046,7 +1252,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '¿Está seguro que desea eliminar el grupo "${group.name}"?',
+                  '¿Está seguro que desea eliminar el grupo "${group['name']}"?',
                   style: TextStyle(fontSize: 16, color: Colors.grey[800]),
                 ),
                 const SizedBox(height: 8),
@@ -1079,11 +1285,11 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
               ElevatedButton.icon(
                 onPressed: () async {
                   try {
-                    await _groupService.deleteGroup(group.id);
+                    await _groupService.deleteGroup(group['id']);
 
                     if (!mounted) return;
                     setState(() {
-                      _groups.removeWhere((g) => g.id == group.id);
+                      _groups.removeWhere((g) => g['id'] == group['id']);
                     });
 
                     if (!dialogContext.mounted) return;

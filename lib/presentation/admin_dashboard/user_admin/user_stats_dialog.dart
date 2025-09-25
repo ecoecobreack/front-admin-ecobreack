@@ -32,9 +32,17 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
     _loadStats();
   }
 
-  void _loadStats() async {
+  void _loadStats([DateTime? selectedDay]) async {
     try {
-      _statsData = ApiService().get('/admin/users/${widget.userId}/stats');
+      String urlParam = '';
+      if (selectedDay != null) {
+        urlParam = '?date=${DateFormat('yyyy-MM-dd').format(selectedDay)}';
+      } else if (_selectedDate != null) {
+        urlParam = '?date=${DateFormat('yyyy-MM-dd').format(_selectedDate)}';
+      }
+      _statsData = ApiService().get(
+        '/admin/users/${widget.userId}/stats$urlParam',
+      );
       if (mounted) {
         setState(() {});
       }
@@ -96,12 +104,15 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
                         firstDay: DateTime.utc(2024, 1, 1),
                         lastDay: DateTime.now(),
                         focusedDay: _focusedDate,
-                        selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+                        selectedDayPredicate:
+                            (day) => isSameDay(_selectedDate, day),
                         onDaySelected: (selectedDay, focusedDay) {
                           setState(() {
                             _selectedDate = selectedDay;
                             _focusedDate = focusedDay;
-                            _loadStats();
+                            _loadStats(
+                              selectedDay,
+                            ); // <-- pasa la fecha seleccionada
                           });
                         },
                         calendarStyle: const CalendarStyle(
@@ -202,10 +213,7 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 5,
-          ),
+          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 5),
         ],
       ),
       child: Column(
@@ -258,7 +266,7 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
         itemBuilder: (context, index) {
           final month = DateTime(2024, index + 1);
           final isSelected = _selectedDate.month == index + 1;
-          
+
           return ListTile(
             selected: isSelected,
             selectedTileColor: const Color(0xFF0067AC).withAlpha(20),
@@ -272,7 +280,7 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
             onTap: () {
               setState(() {
                 _selectedDate = DateTime(_selectedDate.year, index + 1);
-                _loadStats();
+                _loadStats(_selectedDate);
               });
             },
           );
@@ -305,8 +313,9 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
             ),
             onTap: () {
               setState(() {
-                _selectedDate = DateTime(year, _selectedDate.month);
-                _loadStats();
+                // Selecciona el 31 de diciembre de ese año
+                _selectedDate = DateTime(year, 12, 31);
+                _loadStats(_selectedDate);
               });
             },
           );
@@ -318,18 +327,15 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
   Widget _buildViewSelector() {
     return SegmentedButton<String>(
       segments: const [
-        ButtonSegment(
-          value: 'rings',
-          icon: Icon(Icons.donut_large),
-        ),
-        ButtonSegment(
-          value: 'bars',
-          icon: Icon(Icons.bar_chart),
-        ),
+        ButtonSegment(value: 'rings', icon: Icon(Icons.donut_large)),
+        ButtonSegment(value: 'bars', icon: Icon(Icons.bar_chart)),
       ],
       selected: {_selectedView},
       onSelectionChanged: (Set<String> newSelection) {
-        setState(() => _selectedView = newSelection.first);
+        setState(() {
+          _searchType = newSelection.first;
+          _loadStats(_selectedDate); // <-- pasa la fecha seleccionada
+        });
       },
     );
   }
@@ -351,9 +357,10 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
         final stats = snapshot.data?['data'] ?? {};
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 500),
-          child: _selectedView == 'rings'
-              ? _buildRingStats(stats)
-              : _buildBarChart(stats),
+          child:
+              _selectedView == 'rings'
+                  ? _buildRingStats(stats)
+                  : _buildBarChart(stats),
         );
       },
     );
@@ -410,8 +417,12 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
           ],
           titlesData: FlTitlesData(
             show: true,
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            rightTitles: const AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
@@ -439,11 +450,14 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
   Widget _buildRingStats(Map<String, dynamic> stats) {
     final total = (stats['total_activities'] ?? 0).toDouble();
     final completed = (stats['activities_done'] ?? 0).toDouble();
-    final time = (stats['total_time'] ?? 0).toDouble();
+    // Si el tiempo viene en segundos, convertir a minutos redondeado
+    final timeSeconds = (stats['total_time'] ?? 0).toDouble();
+    final timeMinutes = (timeSeconds / 60).round();
     final notCompleted = total - completed;
     final percentage = total > 0 ? completed / total : 0.0;
     final percentageNo = total > 0 ? notCompleted / total : 0.0;
 
+    final totalRepeticiones = (stats['total_repeticiones'] ?? 0).toDouble();
     return Column(
       children: [
         RingStat(
@@ -486,7 +500,7 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
             ),
             RingStat(
               label: 'TIEMPO',
-              value: '${time.toStringAsFixed(0)} min',
+              value: '$timeMinutes min',
               percent: 1.0,
               color: const Color(0xFF186188),
               valueStyle: const TextStyle(
@@ -516,6 +530,21 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
             ),
           ],
         ),
+        const SizedBox(height: 24),
+        // Nuevo diagrama circular para total_repeticiones
+        RingStat(
+          label: 'TOTAL\nREPETICIONES',
+          value: totalRepeticiones.toStringAsFixed(0),
+          percent: 1.0,
+          color: Color.fromARGB(255, 179, 231, 7),
+          valueStyle: const TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: Color.fromARGB(255, 179, 231, 7),
+          ),
+          labelStyle: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 179, 231, 7)),
+          radius: 60.0,
+        ),
       ],
     );
   }
@@ -525,18 +554,11 @@ class _UserStatsDialogState extends State<UserStatsDialog> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 48,
-            color: Colors.red.shade300,
-          ),
+          Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
           const SizedBox(height: 16),
           Text(
             'Error: $error',
-            style: TextStyle(
-              color: Colors.red.shade300,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.red.shade300, fontSize: 16),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),

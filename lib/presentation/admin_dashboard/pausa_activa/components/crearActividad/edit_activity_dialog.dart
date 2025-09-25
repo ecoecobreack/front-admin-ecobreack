@@ -32,7 +32,7 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
   void initState() {
     super.initState();
     _initializeControllers();
-    _steps = List<String>.from(widget.activity['steps'] ?? []);
+    _steps = List<String>.from(widget.activity['pasos'] ?? []);
   }
 
   IconData _iconStringToLabel(String iconString) {
@@ -63,7 +63,7 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
       text: widget.activity['duracion'].toString(),
     );
     _videoLinkController = TextEditingController(
-      text: DriveService.getVideoName({'id': widget.activity['videoUrl']}),
+      text:  widget.activity['videoUrl'],
     );
     _selectedCategory = widget.activity['category'];
     _sensorEnabled =
@@ -226,13 +226,31 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
 
       final result = await ActivityService.updateActivity(
         id: widget.activity['id'].toString(),
-        name: _nameController.text,
-        description: _descriptionController.text,
-        videoUrl: _videoLinkController.text,
-        maxTime: int.parse(_maxTimeController.text),
-        steps: _steps,
-        icon: _getIconString(_selectedCategory),
-        sensorEnabled: _sensorEnabled,
+        name:
+            _nameController.text.isNotEmpty
+                ? _nameController.text
+                : widget.activity['nombre'],
+        description:
+            _descriptionController.text.isNotEmpty
+                ? _descriptionController.text
+                : widget.activity['descripcion'],
+        videoUrl: _videoLinkController.text.isNotEmpty ? _videoLinkController.text : widget.activity['video'] ?? '',
+        maxTime:
+            int.parse(_maxTimeController.text) == 0
+                ? widget.activity['duracion']
+                : int.parse(_maxTimeController.text),
+        steps:
+            _steps.isNotEmpty
+                ? _steps
+                : List<String>.from(widget.activity['pasos'] ?? []),
+        icon:
+            _getIconString(_selectedCategory) == 'Icons.help_outline'
+                ? widget.activity['icono']
+                : _getIconString(_selectedCategory),
+        sensorEnabled:
+            _sensorEnabled == widget.activity['sensorEnabled']
+                ? widget.activity['sensorEnabled']
+                : _sensorEnabled,
       );
 
       if (!mounted) return;
@@ -723,7 +741,7 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
     );
   }
 
-    Widget _buildTimePresetButton(String label, String value) {
+  Widget _buildTimePresetButton(String label, String value) {
     return InkWell(
       onTap: () {
         final controller = _maxTimeController;
@@ -746,7 +764,6 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
       ),
     );
   }
-
 
   Widget _buildVideoSelector() {
     return Column(

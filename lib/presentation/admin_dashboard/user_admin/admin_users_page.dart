@@ -125,13 +125,9 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                         _infoRow('UID', user['uid'] ?? 'N/A'),
                         _infoRow(
                           'Fecha de registro',
-                          user['creationTime'] ?? 'N/A',
+                          user['metadata']['creationTime'] ?? 'N/A',
                         ),
-                        _infoRow(
-                          'Último acceso',
-                          user['lastSignInTime'] ?? 'N/A',
-                        ),
-                        _infoRow('Estado', user['status'] ?? 'N/A'),
+                        _infoRow('Última actividad', user['metadata']['lastSignInTime'] ?? 'N/A'),
                         if (user['gender'] != null)
                           _infoRow('Género', user['gender']),
                         if (user['lastName'] != null)
@@ -270,7 +266,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                 const Spacer(),
                 Container(
                   width: 400, // Aumentado de 300 a 400
-                  height: 45,
+                  height: 35,
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(10),

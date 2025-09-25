@@ -54,4 +54,6 @@ class ProcessGroup {
               : DateTime.now(),
     );
   }
+
+  void operator [](String other) {}
 }

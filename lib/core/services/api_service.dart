@@ -15,45 +15,17 @@ class ApiService {
   static Future<String> resolveBaseUrl() async {
     if (kDebugMode) {
       // For local development
-      return 'http://192.168.0.16:4300';
+      return 'http://localhost:4300';
     }
     // For production
-    return 'http://192.168.0.16:4300'; // Update with your production URL
+    return 'http://localhost:4300'; // Update with your production URL
   }
 
   String _getOrigin() {
     if (kIsWeb) {
-      return 'http://192.168.0.16:4300';
+      return 'http://localhost:4300/';
     }
-    return 'http://192.168.0.16:4300';
-  }
-
-  Future<bool> verifyConnection() async {
-    try {
-      final baseUrl = await resolveBaseUrl();
-      final token = await AuthService.getAdminToken();
-      debugPrint('🔄 Intentando conectar a: $baseUrl/auth/login');
-
-      final response = await _client
-          .get(
-            Uri.parse('$baseUrl/admin/login'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Origin': _getOrigin(),
-              if (token != null) 'Authorization': 'Bearer $token',
-            },
-          )
-          .timeout(const Duration(seconds: 15));
-
-      debugPrint('📡 Response status: ${response.statusCode}');
-      debugPrint('📝 Response body: ${response.body}');
-
-      return response.statusCode == 200 || response.statusCode == 401;
-    } catch (e) {
-      debugPrint('❌ Error de conexión: $e');
-      return false;
-    }
+    return 'http://localhost:4300/';
   }
 
   Future<Map<String, dynamic>> authenticateAdmin(
@@ -63,11 +35,13 @@ class ApiService {
     try {
       debugPrint('🔐 Autenticando admin con email: $email');
       final baseUrl = await resolveBaseUrl();
-      debugPrint('🔐 Intentando autenticar admin en: $baseUrl/admin/login');
+      debugPrint(
+        '🔐 Intentando autenticar admin en: $baseUrl/admin/login/privileged',
+      );
 
       final response = await _client
           .post(
-            Uri.parse('$baseUrl/admin/login'),
+            Uri.parse('$baseUrl/admin/login/privileged'),
             headers: {
               'Content-Type': 'application/json',
               'Origin': _getOrigin(),
@@ -303,17 +277,15 @@ class ApiService {
     required String endpoint,
     String? token,
     Map<String, dynamic>? headers,
+    Map<String, dynamic>? body, // <-- nuevo parámetro
   }) async {
     try {
       final baseUrl = await resolveBaseUrl();
-
-      // Asegurarse de que el endpoint no comience con slash y limpiar dobles slashes
       final cleanEndpoint =
           endpoint.startsWith('/') ? endpoint.substring(1) : endpoint;
       final url = '$baseUrl/$cleanEndpoint';
 
       debugPrint('🗑️ DELETE request to: $url');
-
       if (token != null) {
         debugPrint('🔑 Using token: ${token.substring(0, 20)}...');
       }
@@ -329,6 +301,10 @@ class ApiService {
               if (token != null) 'Authorization': 'Bearer $token',
               ...?headers,
             },
+            body:
+                body != null
+                    ? json.encode(body)
+                    : null, // <-- aquí se envía el body
           )
           .timeout(_timeout);
 

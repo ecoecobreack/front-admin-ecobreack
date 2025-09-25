@@ -12,6 +12,7 @@ class EditPlansContent extends StatefulWidget {
 class _EditPlansContentState extends State<EditPlansContent> {
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = false;
+  final PlanService _planService = PlanService();
 
   @override
   void initState() {
@@ -22,7 +23,9 @@ class _EditPlansContentState extends State<EditPlansContent> {
   Future<void> _loadPlans() async {
     setState(() => _isLoading = true);
     try {
-      final plans = await PlanService.getPlans();
+      debugPrint('Plans loaded');
+      final plans = await _planService.getPlans();
+      debugPrint('Loaded plans: $plans'); // Aquí deberías ver los datos
       if (!mounted) return;
       setState(() {
         _plans = plans;
@@ -30,7 +33,6 @@ class _EditPlansContentState extends State<EditPlansContent> {
       });
     } catch (e) {
       debugPrint('Error loading plans: $e');
-      if (!mounted) return;
       setState(() => _isLoading = false);
     }
   }
@@ -146,8 +148,8 @@ class _EditPlansContentState extends State<EditPlansContent> {
                               Icons.playlist_play,
                               color: Color(0xFF0067AC),
                             ),
-                            title: Text(plan['name']),
-                            subtitle: Text(plan['description']),
+                            title: Text(plan['nombre']),
+                            subtitle: Text(plan['descripcion'] ?? ''),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -187,7 +189,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
         ),
         const SizedBox(width: 16),
         const Text(
-          'Planes Creados',
+          'Planes de Pausas Creados',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,

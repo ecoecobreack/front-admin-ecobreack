@@ -17,17 +17,10 @@ class ProcessUploadService {
   }) async {
     try {
       debugPrint('🔄 Subiendo proceso...');
-
-      // Crear fechas automáticamente
-      final now = DateTime.now().toUtc();
-      final oneYearFromNow = DateTime(now.year + 1, now.month, now.day).toUtc();
-
       final processData = {
         'groupId': groupId,
-        'processName': processName,
-        'pausePlanIds': pausePlanIds,
-        'startDate': now.toIso8601String(),
-        'endDate': oneYearFromNow.toIso8601String(),
+        'categories': pausePlanIds,
+        'nombre': processName,
       };
 
       final token = await AuthService.getAdminToken();
