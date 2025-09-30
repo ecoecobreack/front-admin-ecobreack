@@ -15,7 +15,12 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
   final _descriptionController = TextEditingController();
   List<Map<String, dynamic>> _availableActivities = [];
   final List<Map<String, dynamic>> _selectedActivities = [];
-  Color _selectedColor = const Color.fromARGB(255, 173, 186, 192); // Valor inicial
+  Color _selectedColor = const Color.fromARGB(
+    255,
+    173,
+    186,
+    192,
+  ); // Valor inicial
 
   bool _isLoading = true;
 
@@ -425,6 +430,7 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
                 TextButton(
                   onPressed: () {
                     // Lógica para cancelar
+                    _showCancelConfirmation();
                   },
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.red.shade400,
@@ -831,6 +837,35 @@ class _CreatePlanContentState extends State<CreatePlanContent> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showCancelConfirmation() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Cancelar Plan'),
+            content: const Text(
+              '¿Estás seguro de que deseas cancelar el plan? Los cambios no guardados se perderán.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('No', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _clearForm();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade400,
+                ),
+                child: const Text('Sí, Cancelar'),
+              ),
+            ],
+          ),
     );
   }
 

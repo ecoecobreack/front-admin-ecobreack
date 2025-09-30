@@ -363,7 +363,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
           return const Color(0xFFC6DA23); // Verde claro (Tren Inferior)
         case 'Icons.self_improvement':
           return const Color(0xFF26C6DA); // Turquesa (Movilidad Articular)
-        case 'Icons.extension':
+        case 'Icons.directions_run':
           return const Color(
             0xFFFF8A65,
           ); // Naranja suave (Estiramientos Generales)

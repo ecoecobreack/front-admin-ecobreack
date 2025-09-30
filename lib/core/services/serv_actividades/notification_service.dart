@@ -6,6 +6,34 @@ import '../api_service.dart';
 import '../serv_users/auth_service.dart';
 
 class NotificationService {
+  Future<NotificationPlan> createNotificationPlanFromMap(
+    Map<String, dynamic> data,
+  ) async {
+    try {
+      final token = await AuthService.getAdminToken();
+      if (token == null) throw Exception('No autorizado');
+
+      debugPrint('📤 Enviando plan (map) al servidor: $data');
+
+      final response = await _apiService.post(
+        endpoint: '/admin/notification-plans',
+        data: data,
+        token: token,
+      );
+
+      if (response['status'] == true && response['data'] != null) {
+        debugPrint('✅ Plan creado exitosamente');
+        return NotificationPlan.fromJson(response['data']);
+      }
+      throw Exception(
+        response['message'] ?? 'Error al crear plan de notificación',
+      );
+    } catch (e) {
+      debugPrint('❌ Error creating notification plan (map): $e');
+      rethrow;
+    }
+  }
+
   final ApiService _apiService;
 
   NotificationService([ApiService? apiService])
@@ -189,6 +217,7 @@ class NotificationService {
         startDate: DateTime.parse(pausePlan['startDate']),
         endDate: DateTime.parse(pausePlan['endDate']),
         time: pausePlan['time'] ?? '08:00', // Valor por defecto si no existe
+        timeSecond: pausePlan['timeSecond'] ?? '15:00', // Valor por defecto si no existe
         assignedPlans: {}, // Se llenarán manualmente desde la UI
         id: '', // ID vacío ya que es nuevo
       );

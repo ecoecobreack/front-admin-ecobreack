@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sst_admin/core/services/serv_actividades/process_group_service.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../data/models/notification_plan.dart';
 import '../../../core/services/serv_actividades/notification_service.dart';
@@ -19,7 +20,9 @@ class _NotificationContentState extends State<NotificationContent> {
   final _startDateController = TextEditingController();
   final _endDateController = TextEditingController();
   final _timeController = TextEditingController();
+  final _timeSecondController = TextEditingController();
   DateTime _focusedDay = DateTime.now();
+  final ProcessGroupService _groupService = ProcessGroupService();
   DateTime? _selectedDay;
   final Map<DateTime, List<Map<String, dynamic>>> _assignedPlans = {};
   List<Map<String, dynamic>> _availablePlans = [];
@@ -72,6 +75,7 @@ class _NotificationContentState extends State<NotificationContent> {
     _startDateController.dispose();
     _endDateController.dispose();
     _timeController.dispose();
+    _timeSecondController.dispose();
     super.dispose();
   }
 
@@ -125,7 +129,9 @@ class _NotificationContentState extends State<NotificationContent> {
                               const SizedBox(width: 16),
                               Expanded(child: _buildDateField(false)),
                               const SizedBox(width: 16),
-                              Expanded(child: _buildTimeField()),
+                              Expanded(child: _buildTimeField('Hora mañana')),
+                              const SizedBox(width: 16),
+                              Expanded(child: _buildTimeField('Hora tarde')),
                             ],
                           ),
                         ],
@@ -313,7 +319,7 @@ class _NotificationContentState extends State<NotificationContent> {
     );
   }
 
-  Widget _buildTimeField() {
+  Widget _buildTimeField(String label) {
     final theme = Theme.of(context).copyWith(
       colorScheme: const ColorScheme.light(
         primary: Color(0xFF0067AC),
@@ -324,10 +330,27 @@ class _NotificationContentState extends State<NotificationContent> {
       ),
     );
 
+    // Determinar si es jornada mañana o tarde
+    final bool isMorning = label.toLowerCase().contains('mañana');
+    final TimeOfDay initialTime =
+        isMorning
+            ? const TimeOfDay(hour: 8, minute: 0)
+            : const TimeOfDay(hour: 12, minute: 0);
+    final TimeOfDay minTime =
+        isMorning
+            ? const TimeOfDay(hour: 8, minute: 0)
+            : const TimeOfDay(hour: 12, minute: 0);
+    final TimeOfDay maxTime =
+        isMorning
+            ? const TimeOfDay(hour: 12, minute: 0)
+            : const TimeOfDay(hour: 20, minute: 0);
+
+    final controller = isMorning ? _timeController : _timeSecondController;
+
     return TextFormField(
-      controller: _timeController,
+      controller: controller,
       decoration: InputDecoration(
-        labelText: 'Hora',
+        labelText: label,
         border: const OutlineInputBorder(),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -341,15 +364,31 @@ class _NotificationContentState extends State<NotificationContent> {
       onTap: () async {
         final TimeOfDay? picked = await showTimePicker(
           context: context,
-          initialTime: TimeOfDay.now(),
+          initialTime: initialTime,
           builder: (context, child) => Theme(data: theme, child: child!),
         );
         if (picked != null) {
+          // Validar rango de hora
+          final bool isValid =
+              (picked.hour > minTime.hour ||
+                  (picked.hour == minTime.hour &&
+                      picked.minute >= minTime.minute)) &&
+              (picked.hour < maxTime.hour ||
+                  (picked.hour == maxTime.hour &&
+                      picked.minute <= maxTime.minute));
+          if (!isValid) {
+            _showSnackBar(
+              isMorning
+                  ? 'Seleccione una hora entre 08:00 y 12:00'
+                  : 'Seleccione una hora entre 12:00 y 20:00',
+              backgroundColor: Colors.orange,
+            );
+            return;
+          }
           setState(() {
-            // Formato 24 horas
             final hour = picked.hour.toString().padLeft(2, '0');
             final minute = picked.minute.toString().padLeft(2, '0');
-            _timeController.text = '$hour:$minute';
+            controller.text = '$hour:$minute';
           });
         }
       },
@@ -368,7 +407,7 @@ class _NotificationContentState extends State<NotificationContent> {
           const Padding(
             padding: EdgeInsets.all(16),
             child: Text(
-              'Planes Disponibles',
+              'Procesos Disponibles',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -540,7 +579,7 @@ class _NotificationContentState extends State<NotificationContent> {
   Widget _buildPlanTile(Map<String, dynamic> plan) {
     return ListTile(
       title: Text(plan['name']),
-      subtitle: Text('Hora: ${plan['group']}'),
+      subtitle: Text('Grupo: ${plan['group']}'),
       leading: Icon(
         Icons.drag_indicator,
         color: plan['color'] ?? const Color(0xFF0067AC),
@@ -570,28 +609,26 @@ class _NotificationContentState extends State<NotificationContent> {
                     _showColorPicker(plan);
                   },
                 ),
-                if (_selectedDay != null &&
-                    _assignedPlans.containsKey(_selectedDay) &&
-                    _assignedPlans[_selectedDay]!.any(
-                      (p) => p['id'] == plan['id'],
-                    ))
-                  ListTile(
-                    leading: const Icon(Icons.delete_outline),
-                    title: const Text('Eliminar plan'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      setState(() {
-                        _assignedPlans[_selectedDay!]?.removeWhere(
-                          (p) =>
-                              p['id'] == plan['id'] &&
-                              p['group'] == plan['group'],
-                        );
-                        if (_assignedPlans[_selectedDay!]?.isEmpty ?? false) {
-                          _assignedPlans.remove(_selectedDay);
-                        }
-                      });
-                    },
-                  ),
+                ListTile(
+                  leading: const Icon(Icons.delete_outline),
+                  title: const Text('Eliminar plan'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    setState(() {
+                      _assignedPlans[_selectedDay!]?.removeWhere(
+                        (p) =>
+                            p['id'] == plan['id'] &&
+                            p['group'] == plan['group'],
+                      );
+                      if (_assignedPlans[_selectedDay!]?.isEmpty ?? false) {
+                        _assignedPlans.remove(_selectedDay);
+                      }
+                    });
+                    await _groupService.deleteProcess(plan['id']);
+                    // Recarga la página (re-carga los planes disponibles y asignados)
+                    await _loadSyncedPlans();
+                  },
+                ),
               ],
             ),
           ),
@@ -704,6 +741,10 @@ class _NotificationContentState extends State<NotificationContent> {
           final isTemplate = details.data['isTemplate'] as bool;
           final plan = Map<String, dynamic>.from(details.data)
             ..remove('isTemplate');
+          // Asignar hora mañana y tarde actuales al plan
+          plan['time'] = _timeController.text;
+          plan['timeSecond'] = _timeSecondController.text;
+
           final targetDay = DateTime(day.year, day.month, day.day);
           final sourceDay =
               _selectedDay != null
@@ -926,6 +967,15 @@ class _NotificationContentState extends State<NotificationContent> {
           return;
         }
 
+        if (_timeSecondController.text.isEmpty) {
+          debugPrint('❌ Error: Hora no seleccionada');
+          _showSnackBar(
+            'Error: Debe seleccionar una hora',
+            backgroundColor: Colors.red,
+          );
+          return;
+        }
+
         debugPrint('📋 Validando planes asignados...');
         debugPrint('- Total días con planes: ${_assignedPlans.length}');
 
@@ -938,16 +988,6 @@ class _NotificationContentState extends State<NotificationContent> {
           return;
         }
 
-        // Log assigned plans details
-        _assignedPlans.forEach((date, plans) {
-          debugPrint(
-            '📅 Planes para ${DateFormat('dd/MM/yyyy').format(date)}:',
-          );
-          for (var plan in plans) {
-            debugPrint('  - ${plan['name']} (${plan['group']})');
-          }
-        });
-
         // Convertir los planes asignados al formato correcto
         final convertedAssignedPlans = _assignedPlans.map((date, plans) {
           return MapEntry(
@@ -957,7 +997,8 @@ class _NotificationContentState extends State<NotificationContent> {
                   (plan) => AssignedPlanItem(
                     id: plan['id'],
                     name: plan['name'],
-                    time: plan['group'],
+                    time: plan['time'] ?? '',
+                    timeSecond: plan['timeSecond'] ?? '',
                     group: plan['groupId'],
                   ),
                 )
@@ -970,6 +1011,7 @@ class _NotificationContentState extends State<NotificationContent> {
           startDate: startDate,
           endDate: endDate,
           time: _timeController.text,
+          timeSecond: _timeSecondController.text,
           assignedPlans: convertedAssignedPlans,
           id: '', // ID vacío ya que es un nuevo plan
         );
@@ -980,6 +1022,7 @@ class _NotificationContentState extends State<NotificationContent> {
           Nombre: ${notificationPlan.name}
           Período: ${_formatDate(startDate)} - ${_formatDate(endDate)}
           Hora: ${notificationPlan.time}
+          Hora Tarde: ${_timeSecondController.text}
           Total días: ${_assignedPlans.length}
           Total planes: ${_assignedPlans.values.fold(0, (sum, plans) => sum + plans.length)}
         ''');
@@ -1029,19 +1072,19 @@ class _NotificationContentState extends State<NotificationContent> {
     showDialog(
       context: context,
       builder:
-          (context) => AlertDialog(
+          (dialogContext) => AlertDialog(
             title: const Text('Cancelar Plan'),
             content: const Text(
               '¿Estás seguro de que deseas cancelar el plan? Los cambios no guardados se perderán.',
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: const Text('No', style: TextStyle(color: Colors.grey)),
               ),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(dialogContext);
                   _clearForm();
                 },
                 style: ElevatedButton.styleFrom(
@@ -1060,6 +1103,7 @@ class _NotificationContentState extends State<NotificationContent> {
       _startDateController.clear();
       _endDateController.clear();
       _timeController.clear();
+      _timeSecondController.clear();
       _assignedPlans.clear();
     });
   }

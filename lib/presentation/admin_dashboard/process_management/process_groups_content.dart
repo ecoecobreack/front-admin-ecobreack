@@ -260,7 +260,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                 child: Row(
                   children: [
                     Text(
-                      'Planes Asignados',
+                      'Procesos Asignados',
                       style: TextStyle(
                         color: Color(group['color']),
                         fontWeight: FontWeight.bold,
@@ -555,7 +555,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Planes Asignados',
+                    'Procesos Asignados',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -979,7 +979,7 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        _buildFormLabel('Planes Asignados'),
+                        _buildFormLabel('Procesos Asignados'),
                         const SizedBox(height: 8),
                         ListView.builder(
                           shrinkWrap: true,

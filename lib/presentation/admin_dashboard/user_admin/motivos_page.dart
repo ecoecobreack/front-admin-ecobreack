@@ -61,50 +61,63 @@ class _MotivosPageState extends State<MotivosPage> {
     String descripcion,
     GlobalKey<FormState> formKey,
   ) async {
-    if (formKey.currentState!.validate()) {
-      formKey.currentState!.save();
-      setState(() {
-        _motivos.add({
-          'id': DateTime.now().millisecondsSinceEpoch.toString(),
-          'titulo': titulo,
-          'descripcion': descripcion,
-          'estado': true,
-        });
-      });
-    }
-
     final token = await AuthService.getAdminToken();
     if (token == null) {
       throw Exception('No se encontró token de autenticación');
     }
 
-    final response = await api.post(
-      endpoint: '/admin/motivos', // Sin slash inicial
-      data: {
-        'titulo': titulo,
-        'descripcion': descripcion,
-        'estado': true, // Nuevo motivo activo por defecto
-      },
-      token: token,
-    );
+    try {
+      final response = await api.post(
+        endpoint: '/admin/motivos', // Sin slash inicial
+        data: {
+          'titulo': titulo,
+          'descripcion': descripcion,
+          'estado': true, // Nuevo motivo activo por defecto
+        },
+        token: token,
+      );
 
-    Navigator.of(context).pop(); // Cerrar el diálogo
+      debugPrint(response.toString());
 
-    if (response['status'] != true) {
+      if (response['status'] != true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Error al crear el motivo. Intente nuevamente. ${response['message']}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Error al crear el motivo. Intente nuevamente.'),
+          content: Text('Guardado exitosamente.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      if (formKey.currentState!.validate()) {
+        formKey.currentState!.save();
+        setState(() {
+          _motivos.add({
+            'id': DateTime.now().millisecondsSinceEpoch.toString(),
+            'titulo': titulo,
+            'descripcion': descripcion,
+            'estado': true,
+          });
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al crear el motivo. Intente nuevamente. $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Guardado exitosamente.'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    Navigator.of(context).pop(); // Cerrar el diálogo
   }
 
   void _crearMotivo() async {
@@ -298,50 +311,62 @@ class _MotivosPageState extends State<MotivosPage> {
                 backgroundColor: Color(0xFF0067AC),
               ),
               onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  final token = await AuthService.getAdminToken();
-                  if (token == null) {
-                    throw Exception('No se encontró token de autenticación');
-                  }
+                try {
+                  if (formKey.currentState!.validate()) {
+                    final token = await AuthService.getAdminToken();
+                    if (token == null) {
+                      throw Exception('No se encontró token de autenticación');
+                    }
 
-                  debugPrint(motivo.toString());
-                  setState(() {
-                    motivo['titulo'] = tituloController.text.trim();
-                    motivo['descripcion'] = descripcionController.text.trim();
-                  });
+                    // Guardar valores originales para posible rollback
+                    final String oldTitulo = motivo['titulo'] ?? '';
+                    final String oldDescripcion = motivo['descripcion'] ?? '';
 
-                  final response = await api.put(
-                    endpoint: '/admin/motivos/${motivo['id']}',
-                    data: {
-                      'titulo': tituloController.text.trim(),
-                      'descripcion': descripcionController.text.trim(),
-                      'estado': motivo['estado'] ?? true,
-                    },
-                    token: token,
-                  );
-                  if (response['status'] != true) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Error al guardar los cambios.'),
-                        backgroundColor: Colors.red,
-                      ),
+                    final response = await api.put(
+                      endpoint: '/admin/motivos/${motivo['id']}',
+                      data: {
+                        'titulo': tituloController.text.trim(),
+                        'descripcion': descripcionController.text.trim(),
+                        'estado': motivo['estado'] ?? true,
+                      },
+                      token: token,
                     );
+                    if (response['status'] == true) {
+                      setState(() {
+                        motivo['titulo'] = tituloController.text.trim();
+                        motivo['descripcion'] =
+                            descripcionController.text.trim();
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Guardado exitosamente.'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Error al guardar los cambios.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      // Revertir cambios locales si el backend falla
+                      setState(() {
+                        motivo['titulo'] = oldTitulo;
+                        motivo['descripcion'] = oldDescripcion;
+                      });
+                    }
+                    Navigator.of(context).pop();
                   }
+                } catch (e) {
+                  Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Guardado exitosamente.'),
-                      backgroundColor: Colors.green,
+                    SnackBar(
+                      content: Text('Error al guardar los cambios. $e'),
+                      backgroundColor: Colors.red,
                     ),
                   );
-                  Navigator.of(context).pop();
                 }
-
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Guardado exitosamente.'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
               },
               child: const Text(
                 'Guardar',

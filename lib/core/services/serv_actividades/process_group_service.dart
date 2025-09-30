@@ -119,7 +119,7 @@ class ProcessGroupService {
 
       final response = await _apiService.delete(
         endpoint: 'admin/process-groups/$groupId/plans', // Sin slash inicial
-        body: { 'ids': planIds },
+        body: {'ids': planIds},
         token: token,
       );
 
@@ -159,6 +159,35 @@ class ProcessGroupService {
       debugPrint('✅ Grupo eliminado correctamente');
     } catch (e) {
       debugPrint('❌ Error en deleteGroup: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteProcess(String id) async {
+    try {
+      debugPrint('🗑️ Eliminando proceso: $id');
+
+      if (id.isEmpty) {
+        throw Exception('ID del proceso no válido');
+      }
+
+      final token = await AuthService.getAdminToken();
+      if (token == null) {
+        throw Exception('No se encontró token de autenticación');
+      }
+
+      final response = await _apiService.delete(
+        endpoint: 'admin/notification-plans/process/$id', // Sin slash inicial
+        token: token,
+      );
+
+      if (response['status'] != true) {
+        throw Exception(response['message'] ?? 'Error eliminando el proceso');
+      }
+
+      debugPrint('✅ Proceso eliminado correctamente');
+    } catch (e) {
+      debugPrint('❌ Error en deleteProcess: $e');
       rethrow;
     }
   }

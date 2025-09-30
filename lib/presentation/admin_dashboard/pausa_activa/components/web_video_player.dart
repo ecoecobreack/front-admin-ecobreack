@@ -5,7 +5,7 @@ import 'dart:ui_web' as ui_web;
 class WebVideoPlayer extends StatefulWidget {
   final String videoUrl;
 
-  const WebVideoPlayer({super.key, required this.videoUrl});
+  const WebVideoPlayer({super.key, required this.videoUrl, required String embedUrl});
 
   @override
   State<WebVideoPlayer> createState() => _WebVideoPlayerState();

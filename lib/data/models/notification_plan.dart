@@ -4,12 +4,14 @@ class AssignedPlanItem {
   final String id;
   final String name;
   final String time;
+  final String timeSecond;
   final String group;
 
   AssignedPlanItem({
     required this.id,
     required this.name,
     required this.time,
+    required this.timeSecond,
     required this.group,
   });
 
@@ -18,6 +20,7 @@ class AssignedPlanItem {
       id: json['id'],
       name: json['name'],
       time: json['time'],
+      timeSecond: json['timeSecond'] ?? '',
       group: json['group'],
     );
   }
@@ -27,6 +30,7 @@ class AssignedPlanItem {
       'id': id,
       'name': name,
       'time': time,
+      'timeSecond': timeSecond,
       'group': group,
     };
   }
@@ -38,6 +42,7 @@ class NotificationPlan {
   final DateTime startDate;
   final DateTime endDate;
   final String time;
+  final String timeSecond;
   final Map<DateTime, List<AssignedPlanItem>> assignedPlans;
   final DateTime createdAt;
   bool isActive;
@@ -49,6 +54,7 @@ class NotificationPlan {
     required this.startDate,
     required this.endDate,
     required this.time,
+    required this.timeSecond,
     required this.assignedPlans,
     DateTime? createdAt,
     this.isActive = true,
@@ -68,6 +74,7 @@ class NotificationPlan {
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
       'time': time,
+      'timeSecond': timeSecond,
       'assignedPlans': assignedPlansJson,
       'isActive': isActive,
     };
@@ -81,6 +88,7 @@ class NotificationPlan {
         startDate: DateTime.parse(json['startDate']),
         endDate: DateTime.parse(json['endDate']),
         time: json['time'],
+        timeSecond: json['timeSecond'] ?? '',
         createdAt:
             json['createdAt'] != null
                 ? DateTime.parse(json['createdAt'])

@@ -27,6 +27,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
   final List<String> _activityLog = [];
   final TextEditingController _stepController = TextEditingController();
   final List<String> _steps = [];
+  bool _isCancelDialogOpen = false;
 
   @override
   void dispose() {
@@ -129,24 +130,6 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
         return;
       }
 
-      // Validar el video de Drive
-      if (_videoLinkController.text.contains('drive.google.com')) {
-        final isValid = await DriveService.validateDriveFile(
-          _videoLinkController.text,
-        );
-        if (!mounted) return;
-
-        if (!isValid) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('El video debe estar en la carpeta de EcoBreack'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-      }
-
       final result = await ActivityService.createActivity(
         name: _nameController.text,
         description: _descriptionController.text,
@@ -192,6 +175,8 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
     _maxTimeController.clear();
     _videoLinkController.clear();
     setState(() {
+      _steps.clear();
+      _selectedVideo = null;
       _selectedCategory = null;
       _sensorEnabled = false;
     });
@@ -275,7 +260,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
           ],
         ),
         const SizedBox(height: 16),
-        if (_selectedVideo != null || _isVideoLoading)
+        if ((_selectedVideo != null || _isVideoLoading) && !_isCancelDialogOpen)
           Container(
             height: 250,
             decoration: BoxDecoration(
@@ -667,16 +652,17 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
                   items: [
                     _buildDropdownItem(Icons.visibility, 'Visibilidad'),
                     _buildDropdownItem(Icons.hearing, 'Audición'),
-                    _buildDropdownItem(Icons.psychology, 'Psicología'),
+                    _buildDropdownItem(Icons.psychology, 'Cognitiva'),
                     _buildDropdownItem(
                       Icons.accessibility_new,
-                      'Accesibilidad',
+                      'Estiramientos Generales',
                     ),
-                    _buildDropdownItem(Icons.directions_walk, 'Movilidad'),
                     _buildDropdownItem(
-                      Icons.self_improvement,
-                      'Mejora Personal',
+                      Icons.directions_walk,
+                      'Movilidad Articular',
                     ),
+                    _buildDropdownItem(Icons.self_improvement, 'Tren Inferior'),
+                    _buildDropdownItem(Icons.directions_run, 'Tren Superior'),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -751,7 +737,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
               children: [
                 TextButton(
                   onPressed: () {
-                    // Lógica para cancelar
+                    _showCancelConfirmation();
                   },
                   style: TextButton.styleFrom(
                     backgroundColor: Colors.red.shade400,
@@ -825,5 +811,51 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
         ),
       ),
     );
+  }
+
+  void _showCancelConfirmation() {
+    setState(() {
+      _isCancelDialogOpen = true;
+    });
+    showDialog(
+      context: context,
+      builder:
+          (dialogContext) => AlertDialog(
+            title: const Text('Cancelar Plan'),
+            content: const Text(
+              '¿Estás seguro de que deseas cancelar el plan? Los cambios no guardados se perderán.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext);
+                  setState(() {
+                    _isCancelDialogOpen = false;
+                  });
+                },
+                child: const Text('No', style: TextStyle(color: Colors.grey)),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _clearForm();
+                  Navigator.pop(dialogContext);
+                  setState(() {
+                    _isCancelDialogOpen = false;
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade400,
+                ),
+                child: const Text('Sí, Cancelar'),
+              ),
+            ],
+          ),
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          _isCancelDialogOpen = false;
+        });
+      }
+    });
   }
 }

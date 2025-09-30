@@ -43,9 +43,6 @@ class ActivityService {
         throw Exception('El ID del video es requerido');
       }
 
-      // Limpiar y validar la URL del video
-      final cleanVideoUrl = DriveService.cleanVideoUrl(videoUrl);
-
       final token = await AuthService.getAdminToken();
       if (token == null) {
         throw Exception('No se encontró un token de administrador');
@@ -61,7 +58,7 @@ class ActivityService {
           "Ábrelos y repite el proceso durante 1 minuto.",
         ],
         'icono': "Icons.visibility",
-        'videoUrl': cleanVideoUrl,
+        'videoUrl': videoUrl,
         'sensorEnabled': sensorEnabled,
         'idCategory': "xeL6ZXfHmLKtcvRSM8sE",
         // Remove createdAt from request, let backend handle it
@@ -200,7 +197,7 @@ class ActivityService {
       }
 
       final response = await ApiService().delete(
-        endpoint: 'admin/activities/$id', // Sin slash inicial
+        endpoint: 'admin/exercises/$id', // Sin slash inicial
         token: token,
       );
 

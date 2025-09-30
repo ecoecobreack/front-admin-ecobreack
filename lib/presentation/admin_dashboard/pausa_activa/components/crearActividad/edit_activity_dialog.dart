@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sst_admin/widgets/web_video_player.dart';
 import '../../../../../core/services/serv_actividades/activity_service.dart';
 import '../../../../../core/services/serv_actividades/drive_service.dart';
 import '../video_selector_dialog.dart';
@@ -23,6 +24,7 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
   // Variables de estado
   String? _selectedCategory;
   bool _sensorEnabled = false;
+  bool _isVideoLoading = false;
   bool _showSensorSwitch = false;
   Map<String, dynamic>? _selectedVideo;
   final TextEditingController _stepController = TextEditingController();
@@ -63,7 +65,7 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
       text: widget.activity['duracion'].toString(),
     );
     _videoLinkController = TextEditingController(
-      text:  widget.activity['videoUrl'],
+      text: widget.activity['videoUrl'],
     );
     _selectedCategory = widget.activity['category'];
     _sensorEnabled =
@@ -234,7 +236,10 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
             _descriptionController.text.isNotEmpty
                 ? _descriptionController.text
                 : widget.activity['descripcion'],
-        videoUrl: _videoLinkController.text.isNotEmpty ? _videoLinkController.text : widget.activity['video'] ?? '',
+        videoUrl:
+            _videoLinkController.text.isNotEmpty
+                ? _videoLinkController.text
+                : widget.activity['video'] ?? '',
         maxTime:
             int.parse(_maxTimeController.text) == 0
                 ? widget.activity['duracion']
@@ -519,7 +524,7 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
                   ),
                 const SizedBox(height: 24),
                 // Video selector
-                _buildVideoSelector(),
+                _buildVideoSection(),
                 const SizedBox(height: 24),
                 // Botones
                 Row(
@@ -765,67 +770,41 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
     );
   }
 
-  Widget _buildVideoSelector() {
+  Widget _buildVideoSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Video',
+          'Video de la Actividad',
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: Color(0xFF0067AC),
+            fontSize: 16,
           ),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextField(
-                    controller: _videoLinkController,
-                    enabled: false,
-                    decoration: InputDecoration(
-                      hintText: 'Video actual',
-                      prefixIcon: const Icon(Icons.movie),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
+              child: TextField(
+                controller: _videoLinkController,
+                enabled: false,
+                decoration: InputDecoration(
+                  hintText: 'Seleccione un video...',
+                  prefixIcon: const Icon(Icons.movie),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  if (widget.activity['videoUrl'] != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, left: 12),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.info_outline,
-                            size: 16,
-                            color: Color(0xFF0067AC),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Video actual: ${widget.activity['videoUrl']}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
             const SizedBox(width: 16),
             ElevatedButton.icon(
               onPressed: _showVideoSelector,
               icon: const Icon(Icons.video_library, color: Colors.white),
-              label: const Text(
-                'Cambiar Video',
-                style: TextStyle(color: Colors.white),
+              label: Text(
+                _selectedVideo == null ? 'Seleccionar Video' : 'Cambiar Video',
+                style: const TextStyle(color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0067AC),
@@ -837,7 +816,52 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        if (_selectedVideo != null || _isVideoLoading)
+          Container(
+            height: 250,
+            decoration: BoxDecoration(
+              color: Colors.black87,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: _buildVideoPlayer(),
+            ),
+          ),
+        const SizedBox(height: 16),
       ],
+    );
+  }
+
+  Widget _buildVideoPlayer() {
+    if (_isVideoLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: Colors.white),
+      );
+    }
+
+    if (_selectedVideo != null) {
+      final videoId = _selectedVideo!['id'];
+      return KeyedSubtree(
+        // Añadir KeyedSubtree
+        key: ValueKey(videoId), // Usar el videoId como key
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.grey[800],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: WebVideoPlayer(embedUrl: DriveService.getEmbedUrl(videoId)),
+        ),
+      );
+    }
+
+    return const Center(
+      child: Text(
+        'Seleccione un video para reproducir',
+        style: TextStyle(color: Colors.white),
+      ),
     );
   }
 }

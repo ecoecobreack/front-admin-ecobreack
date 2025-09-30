@@ -223,7 +223,12 @@ class _SavedNotificationPlansState extends State<SavedNotificationPlans> {
               '${DateFormat('dd/MM/yyyy').format(plan.startDate)} - ${DateFormat('dd/MM/yyyy').format(plan.endDate)}',
               Icons.date_range,
             ),
-            _buildInfoRow('Hora de notificación', plan.time, Icons.access_time),
+            _buildInfoRow('Hora de notificación (mañana)', plan.time, Icons.access_time),
+            _buildInfoRow(
+              'Hora de notificación (tarde)',
+              plan.timeSecond,
+              Icons.access_time_filled,
+            ),
             _buildInfoRow(
               'Total de planes',
               '$totalPlans planes programados',
