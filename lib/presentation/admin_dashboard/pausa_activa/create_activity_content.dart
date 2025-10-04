@@ -97,14 +97,16 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
         return 'Icons.visibility';
       case 'Audición':
         return 'Icons.hearing';
-      case 'Psicología':
+      case 'Cognitiva':
         return 'Icons.psychology';
-      case 'Accesibilidad':
+      case 'Estiramientos Generales':
         return 'Icons.accessibility_new';
-      case 'Movilidad':
+      case 'Movilidad Articular':
         return 'Icons.directions_walk';
-      case 'Mejora Personal':
+      case 'Tren Inferior':
         return 'Icons.self_improvement';
+      case 'Tren Superior':
+        return 'Icons.directions_run';
       default:
         return 'Icons.help_outline';
     }

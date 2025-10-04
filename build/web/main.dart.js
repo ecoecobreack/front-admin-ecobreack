@@ -121260,10 +121260,11 @@ case 1:return A.D(q,r)}})
 return A.E($async$N_,r)},
 a84(a){switch(a){case"Visibilidad":return"Icons.visibility"
 case"Audici\xf3n":return"Icons.hearing"
-case"Psicolog\xeda":return"Icons.psychology"
-case"Accesibilidad":return"Icons.accessibility_new"
-case"Movilidad":return"Icons.directions_walk"
-case"Mejora Personal":return"Icons.self_improvement"
+case"Cognitiva":return"Icons.psychology"
+case"Estiramientos Generales":return"Icons.accessibility_new"
+case"Movilidad Articular":return"Icons.directions_walk"
+case"Tren Inferior":return"Icons.self_improvement"
+case"Tren Superior":return"Icons.directions_run"
 default:return"Icons.help_outline"}},
 y4(){var s=0,r=A.F(t.H),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f
 var $async$y4=A.B(function(a,b){if(a===1){o.push(b)
