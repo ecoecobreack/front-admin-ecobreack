@@ -334,11 +334,11 @@ class _NotificationContentState extends State<NotificationContent> {
     final bool isMorning = label.toLowerCase().contains('mañana');
     final TimeOfDay initialTime =
         isMorning
-            ? const TimeOfDay(hour: 8, minute: 0)
+            ? const TimeOfDay(hour: 5, minute: 0)
             : const TimeOfDay(hour: 12, minute: 0);
     final TimeOfDay minTime =
         isMorning
-            ? const TimeOfDay(hour: 8, minute: 0)
+            ? const TimeOfDay(hour: 5, minute: 0)
             : const TimeOfDay(hour: 12, minute: 0);
     final TimeOfDay maxTime =
         isMorning
@@ -379,7 +379,7 @@ class _NotificationContentState extends State<NotificationContent> {
           if (!isValid) {
             _showSnackBar(
               isMorning
-                  ? 'Seleccione una hora entre 08:00 y 12:00'
+                  ? 'Seleccione una hora entre 05:00 y 12:00'
                   : 'Seleccione una hora entre 12:00 y 20:00',
               backgroundColor: Colors.orange,
             );
