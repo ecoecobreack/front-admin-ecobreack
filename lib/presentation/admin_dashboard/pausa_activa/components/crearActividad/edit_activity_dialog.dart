@@ -379,18 +379,22 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
                           items: [
                             _buildDropdownItem(Icons.visibility, 'Visibilidad'),
                             _buildDropdownItem(Icons.hearing, 'Audición'),
-                            _buildDropdownItem(Icons.psychology, 'Psicología'),
+                            _buildDropdownItem(Icons.psychology, 'Cognitiva'),
                             _buildDropdownItem(
                               Icons.accessibility_new,
-                              'Accesibilidad',
+                              'Estiramientos Generales',
                             ),
                             _buildDropdownItem(
                               Icons.directions_walk,
-                              'Movilidad',
+                              'Movilidad Articular',
                             ),
                             _buildDropdownItem(
                               Icons.self_improvement,
-                              'Mejora Personal',
+                              'Tren Inferior',
+                            ),
+                            _buildDropdownItem(
+                              Icons.directions_run,
+                              'Tren Superior',
                             ),
                           ],
                           onChanged: (value) {

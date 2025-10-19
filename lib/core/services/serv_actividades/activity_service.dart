@@ -52,11 +52,7 @@ class ActivityService {
         'nombre': name.trim(), // Placeholder for backend requirement
         'duracion': maxTime, // Using maxTime as duration
         'descripcion': description.trim(),
-        'pasos': [
-          "Siéntate cómodo y relaja la vista.",
-          "Cierra los ojos durante 2 segundos.",
-          "Ábrelos y repite el proceso durante 1 minuto.",
-        ],
+        'pasos': steps.map((step) => step.trim()).toList(),
         'icono': "Icons.visibility",
         'videoUrl': videoUrl,
         'sensorEnabled': sensorEnabled,

@@ -646,6 +646,8 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
         return Icons.directions_walk;
       case 'self_improvement':
         return Icons.self_improvement;
+      case 'directions_run':
+        return Icons.directions_run;
       default:
         return Icons.extension;
     }
