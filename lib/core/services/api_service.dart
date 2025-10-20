@@ -15,17 +15,17 @@ class ApiService {
   static Future<String> resolveBaseUrl() async {
     if (kDebugMode) {
       // For local development
-      return 'https://backeco-zwl8.onrender.com';
+      return 'https://backeco.onrender.com';
     }
     // For production
-    return 'https://backeco-zwl8.onrender.com';
+    return 'https://backeco.onrender.com';
   }
 
   String _getOrigin() {
     if (kIsWeb) {
-      return 'https://backeco-zwl8.onrender.com';
+      return 'https://backeco.onrender.com';
     }
-    return 'https://backeco-zwl8.onrender.com';
+    return 'https://backeco.onrender.com';
   }
 
   Future<Map<String, dynamic>> authenticateAdmin(
