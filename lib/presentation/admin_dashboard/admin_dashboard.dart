@@ -575,7 +575,7 @@ class _SidebarHeaderExpanded extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  'ECOBREACK',
+                  'ECOBREAK',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
