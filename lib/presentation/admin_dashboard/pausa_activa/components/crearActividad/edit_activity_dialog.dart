@@ -115,14 +115,16 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
         return 'Icons.visibility';
       case 'Audición':
         return 'Icons.hearing';
-      case 'Psicología':
+      case 'Cognitiva':
         return 'Icons.psychology';
-      case 'Accesibilidad':
+      case 'Estiramientos Generales':
         return 'Icons.accessibility_new';
-      case 'Movilidad':
+      case 'Movilidad Articular':
         return 'Icons.directions_walk';
-      case 'Mejora Personal':
+      case 'Tren Inferior':
         return 'Icons.self_improvement';
+      case 'Tren Superior':
+        return 'Icons.directions_run';
       default:
         return 'Icons.help_outline';
     }
@@ -257,6 +259,8 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
                 ? widget.activity['sensorEnabled']
                 : _sensorEnabled,
       );
+
+      debugPrint('Activity update result: $result');
 
       if (!mounted) return;
 
@@ -403,9 +407,6 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
                               _showSensorSwitch =
                                   value == 'Tren Superior' ||
                                   value == 'Movilidad Articular';
-                              if (!_showSensorSwitch) {
-                                _sensorEnabled = false;
-                              }
                             });
                           },
                           icon: const Icon(
@@ -415,7 +416,15 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
                           dropdownColor: Colors.white,
                           elevation: 3,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 52),
+                        const Text(
+                          'Reconocimiento de sensor',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF0067AC),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -467,65 +476,11 @@ class _EditActivityDialogState extends State<EditActivityDialog> {
                         ),
                       ],
                     ),
-                    const Text(
-                      'Categoría',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0067AC),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                   ],
                 ),
                 const SizedBox(height: 16),
-                // Sensor de movimiento
-                if (_showSensorSwitch)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0067AC).withAlpha(13),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: const Color(0xFF0067AC).withAlpha(26),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.sensors, color: Color(0xFF0067AC)),
-                        const SizedBox(width: 12),
-                        const Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Sensor de Movimiento',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0067AC),
-                                ),
-                              ),
-                              Text(
-                                'Activar detección de movimiento para esta actividad',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: _sensorEnabled,
-                          onChanged: (value) {
-                            setState(() {
-                              _sensorEnabled = value;
-                            });
-                          },
-                          activeColor: const Color(0xFF0067AC),
-                        ),
-                      ],
-                    ),
-                  ),
+
                 const SizedBox(height: 24),
                 // Video selector
                 _buildVideoSection(),
