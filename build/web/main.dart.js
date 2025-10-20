@@ -119785,7 +119785,7 @@ $0(){},
 $S:0}
 A.ac5.prototype={
 H(a){var s=null,r=t.p
-return A.a8(s,A.ax(A.b([A.ca(A.b1w("assets/imagenes/LOGOECOBREACK.png",64,64),82,64),B.ajx,A.aS(A.ad(A.b([B.aqm,A.R("Panel Admin",s,B.ax,s,A.b8(s,s,B.bk,s,s,s,s,s,s,s,s,10,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),s,s,s)],r),B.A,B.c5,B.j,0,B.q),1),B.cR,A.ca(A.dI(!1,B.P,!0,s,A.dZ(!1,s,!0,B.a3W,s,!0,s,s,s,s,s,s,s,s,s,s,this.c,s,s,s,s,s,s,s),B.bh,B.D,0,s,s,B.h8,s,s,B.ba),24,24)],r),B.m,B.h,B.j,0,s),B.l,s,s,s,s,90,s,s,B.b2,s,s,s)}}
+return A.a8(s,A.ax(A.b([A.ca(A.b1w("assets/imagenes/LOGOECOBREACK.png",64,64),82,64),B.ajx,A.aS(A.ad(A.b([B.aqe,A.R("Panel Admin",s,B.ax,s,A.b8(s,s,B.bk,s,s,s,s,s,s,s,s,10,s,s,s,s,s,!0,s,s,s,s,s,s,s,s),s,s,s)],r),B.A,B.c5,B.j,0,B.q),1),B.cR,A.ca(A.dI(!1,B.P,!0,s,A.dZ(!1,s,!0,B.a3W,s,!0,s,s,s,s,s,s,s,s,s,s,this.c,s,s,s,s,s,s,s),B.bh,B.D,0,s,s,B.h8,s,s,B.ba),24,24)],r),B.m,B.h,B.j,0,s),B.l,s,s,s,s,90,s,s,B.b2,s,s,s)}}
 A.ac4.prototype={
 H(a){var s=null
 return A.ca(A.ad(A.b([A.ca(A.b1w("assets/imagenes/LOGOECOBREACK.png",30,30),30,30),B.dd,A.ca(A.dI(!1,B.P,!0,s,A.dZ(!1,s,!0,B.a44,s,!0,s,s,s,s,s,s,s,s,s,s,this.c,s,s,s,s,s,s,s),B.bh,B.D,0,s,s,B.h8,s,s,B.ba),20,20)],t.p),B.m,B.c5,B.j,0,B.q),90,s)}}
@@ -120704,7 +120704,7 @@ g=A.b16(A.e2(r,new A.ct(4,A.a1(8),B.c0),r,B.id,r,r,r,r,!0,r,r,r,r,r,r,r,r,r,r,r,
 i=A.z(13,B.e.k()>>>16&255,B.e.k()>>>8&255,B.e.k()&255)
 d=A.a1(8)
 c=A.dC(A.z(26,B.e.k()>>>16&255,B.e.k()>>>8&255,B.e.k()&255),1)
-d=A.ad(A.b([A.ad(A.b([B.UO,B.aw,g,B.ajD,B.aqg,B.aw,A.a8(r,A.ax(A.b([B.Bw,B.c7,B.AE,A.aCo(B.e,r,r,new A.aLo(s),s.y)],n),B.m,B.h,B.j,0,r),B.l,r,r,new A.a9(i,r,c,d,r,r,B.w),r,r,r,r,B.cs,r,r,r)],n),B.A,B.h,B.j,0,B.q),B.a_],n),B.A,B.h,B.j,0,B.q)
+d=A.ad(A.b([A.ad(A.b([B.UO,B.aw,g,B.ajD,B.aqh,B.aw,A.a8(r,A.ax(A.b([B.Bw,B.c7,B.AE,A.aCo(B.e,r,r,new A.aLo(s),s.y)],n),B.m,B.h,B.j,0,r),B.l,r,r,new A.a9(i,r,c,d,r,r,B.w),r,r,r,r,B.cs,r,r,r)],n),B.A,B.h,B.j,0,B.q),B.a_],n),B.A,B.h,B.j,0,B.q)
 c=A.aS(A.fW(r,B.br,!1,r,!0,B.z,r,A.hs(),s.w,r,r,r,r,r,2,A.e2(r,new A.ct(4,A.a1(8),B.c0),r,r,r,r,r,r,!0,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,r,"Seleccione un video...",r,r,r,r,r,r,r,r,r,!0,!0,r,B.Bu,r,r,r,r,r,r,r,r,r,r,r,r),B.a3,!0,r,!0,!1,!1,r,B.bo,r,r,r,r,r,r,r,r,1,r,r,!1,"\u2022",r,r,r,r,r,!1,r,r,!1,r,!0,r,B.b1,r,r,r,r,r,r,r,r,r,r,r,r,!0,B.a2,r,B.bH,r,r,r,r),1)
 i=A.b([B.UB,B.aw,A.ax(A.b([c,B.au,A.q3(B.vq,A.R(s.as==null?"Seleccionar Video":"Cambiar Video",r,r,r,B.fW,r,r,r),s.gawO(),A.dw(r,r,B.e,r,r,r,r,r,r,r,r,r,B.ux,r,r,r,r,r,r,r))],n),B.m,B.h,B.j,0,r),B.a_],n)
 g=s.as
@@ -121128,7 +121128,7 @@ case 6:case 1:return A.D(q,r)
 case 2:return A.C(o.at(-1),r)}})
 return A.E($async$Dt,r)},
 H(a){var s=null,r=A.a1(16),q=A.b([new A.bh(0,B.O,A.z(25,B.u.k()>>>16&255,B.u.k()>>>8&255,B.u.k()&255),B.wH,20)],t.V),p=A.a1(20),o=t.p
-return A.iA(s,B.D,A.a8(s,A.ad(A.b([A.a8(s,A.ax(A.b([B.vq,B.c7,B.aqk,B.bz,A.a8(s,A.fW(s,B.br,!1,s,!0,B.z,s,A.hs(),this.w,s,s,s,s,s,2,A.e2(s,new A.ct(4,A.a1(20),B.p),s,B.Ap,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Buscar video...",s,s,s,s,s,s,s,s,s,!0,!0,s,B.a4i,s,s,s,s,s,s,s,s,s,s,s,s),B.a3,!0,s,!0,s,!1,s,B.bo,s,s,s,s,s,s,s,s,1,s,s,!1,"\u2022",s,new A.aY5(this),s,s,s,!1,s,s,!1,s,!0,s,B.b1,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.a2,s,B.bH,s,s,s,s),B.l,s,s,new A.a9(B.k,s,s,p,s,s,B.w),s,40,s,s,s,s,s,300)],o),B.m,B.h,B.j,0,s),B.l,s,s,B.WX,s,s,s,s,B.b1,s,s,s),A.aS(A.a8(s,this.agc(),B.l,s,s,s,s,s,s,s,B.b1,s,s,s),1)],o),B.m,B.h,B.j,0,B.q),B.l,s,s,new A.a9(B.k,s,s,r,q,s,B.w),s,600,s,s,s,s,s,900),s,s,s,s,B.cQ,s,s,s)},
+return A.iA(s,B.D,A.a8(s,A.ad(A.b([A.a8(s,A.ax(A.b([B.vq,B.c7,B.aql,B.bz,A.a8(s,A.fW(s,B.br,!1,s,!0,B.z,s,A.hs(),this.w,s,s,s,s,s,2,A.e2(s,new A.ct(4,A.a1(20),B.p),s,B.Ap,s,s,s,s,!0,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,s,"Buscar video...",s,s,s,s,s,s,s,s,s,!0,!0,s,B.a4i,s,s,s,s,s,s,s,s,s,s,s,s),B.a3,!0,s,!0,s,!1,s,B.bo,s,s,s,s,s,s,s,s,1,s,s,!1,"\u2022",s,new A.aY5(this),s,s,s,!1,s,s,!1,s,!0,s,B.b1,s,s,s,s,s,s,s,s,s,s,s,s,!0,B.a2,s,B.bH,s,s,s,s),B.l,s,s,new A.a9(B.k,s,s,p,s,s,B.w),s,40,s,s,s,s,s,300)],o),B.m,B.h,B.j,0,s),B.l,s,s,B.WX,s,s,s,s,B.b1,s,s,s),A.aS(A.a8(s,this.agc(),B.l,s,s,s,s,s,s,s,B.b1,s,s,s),1)],o),B.m,B.h,B.j,0,B.q),B.l,s,s,new A.a9(B.k,s,s,r,q,s,B.w),s,600,s,s,s,s,s,900),s,s,s,s,B.cQ,s,s,s)},
 agc(){var s,r,q=this,p=null
 if(q.e)return B.Zh
 s=q.f
@@ -122888,7 +122888,7 @@ A.aRy.prototype={
 $0(){return this.a.z=this.b},
 $S:0}
 A.aS0.prototype={
-$1(a){var s,r,q,p=null,o=A.a1(16),n=A.a1(16),m=A.b([new A.bh(0,B.O,A.z(26,B.e.k()>>>16&255,B.e.k()>>>8&255,B.e.k()&255),B.d8,12)],t.V),l=t.p,k=A.ax(A.b([A.a8(p,B.a3Y,B.l,p,p,new A.a9(A.z(26,B.e.k()>>>16&255,B.e.k()>>>8&255,B.e.k()&255),p,p,A.a1(8),p,p,B.w),p,p,p,p,B.b2,p,p,p),B.au,B.aql],l),B.m,B.h,B.j,0,p),j=this.a,i=A.R("Nombre del Grupo",p,p,p,B.hM,p,p,p),h=A.ie(!1,j.e,p,j.Cl("Ingrese el nombre del grupo"),!1,p,p,p,p,1,!1,p,p,p,p,p,!1,p,p,B.a2,p,new A.aRY()),g=A.R("Descripci\xf3n",p,p,p,B.hM,p,p,p),f=A.ie(!1,j.f,p,j.Cl("Ingrese una descripci\xf3n"),!1,p,p,p,p,3,!1,p,p,p,p,p,!1,p,p,B.a2,p,new A.aRZ()),e=A.R("Color del Grupo",p,p,p,B.hM,p,p,p),d=A.a1(8),c=j.z
+$1(a){var s,r,q,p=null,o=A.a1(16),n=A.a1(16),m=A.b([new A.bh(0,B.O,A.z(26,B.e.k()>>>16&255,B.e.k()>>>8&255,B.e.k()&255),B.d8,12)],t.V),l=t.p,k=A.ax(A.b([A.a8(p,B.a3Y,B.l,p,p,new A.a9(A.z(26,B.e.k()>>>16&255,B.e.k()>>>8&255,B.e.k()&255),p,p,A.a1(8),p,p,B.w),p,p,p,p,B.b2,p,p,p),B.au,B.aqm],l),B.m,B.h,B.j,0,p),j=this.a,i=A.R("Nombre del Grupo",p,p,p,B.hM,p,p,p),h=A.ie(!1,j.e,p,j.Cl("Ingrese el nombre del grupo"),!1,p,p,p,p,1,!1,p,p,p,p,p,!1,p,p,B.a2,p,new A.aRY()),g=A.R("Descripci\xf3n",p,p,p,B.hM,p,p,p),f=A.ie(!1,j.f,p,j.Cl("Ingrese una descripci\xf3n"),!1,p,p,p,p,3,!1,p,p,p,p,p,!1,p,p,B.a2,p,new A.aRZ()),e=A.R("Color del Grupo",p,p,p,B.hM,p,p,p),d=A.a1(8),c=j.z
 c=A.z(26,c.k()>>>16&255,c.k()>>>8&255,c.k()&255)
 s=A.a1(8)
 r=j.z
@@ -128744,8 +128744,8 @@ B.jt=new A.q(1,0.12941176470588237,0.12941176470588237,0.12941176470588237,B.i)
 B.acd=new A.cF([50,B.fd,100,B.u5,200,B.fc,300,B.eB,350,B.i7,400,B.eA,500,B.zR,600,B.b0,700,B.cB,800,B.c1,850,B.u1,900,B.jt],t.pl)
 B.bk=new A.ko(B.acd,1,0.6196078431372549,0.6196078431372549,0.6196078431372549,B.i)
 B.kU=new A.o(!0,B.bk,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.aqi=new A.an("Seleccione un d\xeda para ver los detalles",null,B.kU,null,null,null,null,null,null,null)
-B.Zf=new A.fe(B.a0,null,null,B.aqi,null)
+B.aqj=new A.an("Seleccione un d\xeda para ver los detalles",null,B.kU,null,null,null,null,null,null,null)
+B.Zf=new A.fe(B.a0,null,null,B.aqj,null)
 B.k=new A.q(1,1,1,1,B.i)
 B.fW=new A.o(!0,B.k,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.arp=new A.an("Seleccione un video para reproducir",null,B.fW,null,null,null,null,null,null,null)
@@ -132224,8 +132224,8 @@ B.aqR=new A.an("Fecha",null,B.cT,null,null,null,null,null,null,null)
 B.a2r=new A.jB(2,B.dG,B.aqR,null)
 B.arl=new A.an("Actividad",null,B.cT,null,null,null,null,null,null,null)
 B.a2p=new A.jB(2,B.dG,B.arl,null)
-B.aqj=new A.an("Duraci\xf3n",null,B.cT,null,null,null,null,null,null,null)
-B.a2t=new A.jB(1,B.dG,B.aqj,null)
+B.aqk=new A.an("Duraci\xf3n",null,B.cT,null,null,null,null,null,null,null)
+B.a2t=new A.jB(1,B.dG,B.aqk,null)
 B.arx=new A.an("Completado",null,B.cT,null,null,null,null,null,null,null)
 B.a2u=new A.jB(1,B.dG,B.arx,null)
 B.aab=s([B.a2q,B.a2r,B.a2p,B.a2t,B.a2u],t.p)
@@ -132238,8 +132238,8 @@ B.arf=new A.an("Procesos Disponibles",null,B.eS,null,null,null,null,null,null,nu
 B.afB=new A.aV(B.b7,B.arf,null)
 B.a1T=new A.am(0,24,0,24)
 B.Uq=new A.o(!0,null,null,null,null,null,16,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.aqf=new A.an("Esta acci\xf3n cerrar\xe1 tu sesi\xf3n actual.",null,B.Uq,null,null,null,null,null,null,null)
-B.afC=new A.aV(B.a1T,B.aqf,null)
+B.aqg=new A.an("Esta acci\xf3n cerrar\xe1 tu sesi\xf3n actual.",null,B.Uq,null,null,null,null,null,null,null)
+B.afC=new A.aV(B.a1T,B.aqg,null)
 B.P7=new A.GO(null)
 B.bx=new A.ZH(0,"fill")
 B.bb=new A.ZH(1,"stroke")
@@ -132659,12 +132659,12 @@ B.ar7=new A.an("Motivo no pudo ser eliminado.",null,null,null,null,null,null,nul
 B.ajQ=new A.et(B.ar7,B.M,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
 B.aqD=new A.an("Iniciando exportaci\xf3n...",null,null,null,null,null,null,null,null,null)
 B.ajR=new A.et(B.aqD,null,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
-B.aqe=new A.an("Guardado exitosamente.",null,null,null,null,null,null,null,null,null)
-B.TW=new A.et(B.aqe,B.aR,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
+B.aqf=new A.an("Guardado exitosamente.",null,null,null,null,null,null,null,null,null)
+B.TW=new A.et(B.aqf,B.aR,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
 B.arU=new A.an("\u2705 \xa1Inicio de sesi\xf3n exitoso!",null,null,null,null,null,null,null,null,null)
 B.ajS=new A.et(B.arU,B.aR,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
-B.aqh=new A.an("\u2705 Actividades eliminadas exitosamente",null,null,null,null,null,null,null,null,null)
-B.ajT=new A.et(B.aqh,B.aR,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
+B.aqi=new A.an("\u2705 Actividades eliminadas exitosamente",null,null,null,null,null,null,null,null,null)
+B.ajT=new A.et(B.aqi,B.aR,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
 B.arH=new A.an("Motivo eliminado exitosamente.",null,null,null,null,null,null,null,null,null)
 B.ajU=new A.et(B.arH,B.aR,null,null,null,null,null,null,null,null,null,null,null,B.ao,null,null,null,B.z,null)
 B.arT=new A.an("Por favor complete todos los campos y agregue al menos una actividad",null,null,null,null,null,null,null,null,null)
@@ -133110,14 +133110,14 @@ B.alv=new A.o(!0,B.u,null,".AppleSystemUIFont",null,null,null,null,null,null,nul
 B.aqb=new A.eS(B.anB,B.amp,B.anC,B.aoi,B.alY,B.am4,B.amM,B.ao3,B.an1,B.aoQ,B.aln,B.alE,B.aoK,B.ap4,B.alv)
 B.Ux=new A.o(!0,B.e,null,null,null,null,24,B.W,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.aqc=new A.an("No hay grupos creados",null,B.Ux,null,null,null,null,null,null,null)
+B.xF=new A.o(!0,B.e,null,null,null,null,20,B.a5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
+B.aqe=new A.an("ECOBREAK",null,B.xF,null,null,B.ax,null,null,null,null)
 B.and=new A.o(!0,B.e,null,null,null,null,16,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.UA=new A.an("Cancelar",null,B.and,null,null,null,null,null,null,null)
-B.aqg=new A.an("Reconocimiento de sensor",null,B.cU,null,null,null,null,null,null,null)
+B.aqh=new A.an("Reconocimiento de sensor",null,B.cU,null,null,null,null,null,null,null)
 B.anf=new A.o(!0,B.k,null,null,null,null,20,B.a5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.aqk=new A.an("Seleccionar Video",null,B.anf,null,null,null,null,null,null,null)
-B.xF=new A.o(!0,B.e,null,null,null,null,20,B.a5,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.aql=new A.an("Crear Nuevo Grupo",null,B.xF,null,null,null,null,null,null,null)
-B.aqm=new A.an("ECOBREACK",null,B.xF,null,null,B.ax,null,null,null,null)
+B.aql=new A.an("Seleccionar Video",null,B.anf,null,null,null,null,null,null,null)
+B.aqm=new A.an("Crear Nuevo Grupo",null,B.xF,null,null,null,null,null,null,null)
 B.aqn=new A.an("No hay planes creados",null,B.xF,null,null,null,null,null,null,null)
 B.aqo=new A.an("Actividades del Plan",null,B.eS,null,null,null,null,null,null,null)
 B.aqp=new A.an("Editar",null,null,null,null,null,null,null,null,null)
