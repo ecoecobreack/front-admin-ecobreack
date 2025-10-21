@@ -55,6 +55,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/
     - assets/imagenes/image_2.png
     - assets/imagenes/logo_emas.png
     - assets/imagenes/LOGOECOBREACK.png
