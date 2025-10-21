@@ -36,7 +36,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
       if (!mounted) return;
 
       setState(() {
-        _activities = activities ?? [];
+        _activities = activities;
         _isLoading = false;
       });
 
