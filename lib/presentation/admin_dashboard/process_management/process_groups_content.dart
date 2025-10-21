@@ -504,15 +504,12 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 400),
                     child:
                         members != null && members.isNotEmpty
                             ? ListView.builder(
+                              shrinkWrap: true,
                               itemCount: membersCount,
                               itemBuilder: (context, index) {
                                 final user = members[index];
@@ -551,11 +548,9 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                                 );
                               },
                             )
-                            : const Center(
-                              child: Text(
-                                'No hay miembros en este grupo.',
-                                style: TextStyle(color: Colors.grey),
-                              ),
+                            : const Text(
+                              'No hay miembros en este grupo.',
+                              style: TextStyle(color: Colors.grey),
                             ),
                   ),
                   const SizedBox(height: 24),
@@ -567,42 +562,25 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                       color: Color(group['color']),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 400),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: plans.length,
+                      itemBuilder: (context, index) {
+                        final plan = group['plans'][index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Color(group['color']),
+                            child: Icon(Icons.assignment, color: Colors.white),
+                          ),
+                          title: Text(plan['nombre']),
+                          subtitle: Text(
+                            plan['estado'] == true ? 'Activo' : 'Inactivo',
+                          ),
+                        );
+                      },
                     ),
-                    child:
-                        plans.isEmpty
-                            ? const Center(
-                              child: Text(
-                                'No hay procesos asignados',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            )
-                            : ListView.builder(
-                              itemCount: plans.length,
-                              itemBuilder: (context, index) {
-                                final plan = group['plans'][index];
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Color(group['color']),
-                                    child: Icon(
-                                      Icons.assignment,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  title: Text(plan['nombre']),
-                                  subtitle: Text(
-                                    plan['estado'] == true
-                                        ? 'Activo'
-                                        : 'Inactivo',
-                                  ),
-                                );
-                              },
-                            ),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -1003,65 +981,50 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
                         const SizedBox(height: 24),
                         _buildFormLabel('Procesos Asignados'),
                         const SizedBox(height: 8),
-                        Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child:
-                              plans.isEmpty
-                                  ? const Center(
-                                    child: Text(
-                                      'No hay procesos asignados',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  )
-                                  : ListView.builder(
-                                    itemCount: plans.length,
-                                    itemBuilder: (context, index) {
-                                      final plan = plans[index];
-                                      final isMarkedForDelete = _plansToDelete
-                                          .contains(plan['id']);
-                                      return ListTile(
-                                        leading: Icon(
-                                          Icons.assignment,
-                                          color: Colors.grey[700],
-                                        ),
-                                        title: Text(plan['nombre'] ?? ''),
-                                        subtitle: Text(
-                                          plan['estado'] == true
-                                              ? 'Activo'
-                                              : 'Inactivo',
-                                        ),
-                                        trailing: IconButton(
-                                          icon: Icon(
-                                            isMarkedForDelete
-                                                ? Icons.delete_forever
-                                                : Icons.delete,
-                                            color:
-                                                isMarkedForDelete
-                                                    ? Colors.red
-                                                    : Colors.grey,
-                                          ),
-                                          tooltip:
-                                              isMarkedForDelete
-                                                  ? 'Desmarcar para eliminar'
-                                                  : 'Eliminar plan',
-                                          onPressed: () {
-                                            if (isMarkedForDelete) {
-                                              _plansToDelete.remove(plan['id']);
-                                            } else {
-                                              _plansToDelete.add(plan['id']);
-                                            }
-                                            // Forzar rebuild del dialog
-                                            (context as Element)
-                                                .markNeedsBuild();
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: plans.length,
+                          itemBuilder: (context, index) {
+                            final plan = plans[index];
+                            final isMarkedForDelete = _plansToDelete.contains(
+                              plan['id'],
+                            );
+                            return ListTile(
+                              leading: Icon(
+                                Icons.assignment,
+                                color: Colors.grey[700],
+                              ),
+                              title: Text(plan['nombre'] ?? ''),
+                              subtitle: Text(
+                                plan['estado'] == true ? 'Activo' : 'Inactivo',
+                              ),
+                              trailing: IconButton(
+                                icon: Icon(
+                                  isMarkedForDelete
+                                      ? Icons.delete_forever
+                                      : Icons.delete,
+                                  color:
+                                      isMarkedForDelete
+                                          ? Colors.red
+                                          : Colors.grey,
+                                ),
+                                tooltip:
+                                    isMarkedForDelete
+                                        ? 'Desmarcar para eliminar'
+                                        : 'Eliminar plan',
+                                onPressed: () {
+                                  if (isMarkedForDelete) {
+                                    _plansToDelete.remove(plan['id']);
+                                  } else {
+                                    _plansToDelete.add(plan['id']);
+                                  }
+                                  // Forzar rebuild del dialog
+                                  (context as Element).markNeedsBuild();
+                                },
+                              ),
+                            );
+                          },
                         ),
                         if (_plansToDelete.isNotEmpty)
                           Padding(
