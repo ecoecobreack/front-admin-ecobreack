@@ -12,7 +12,6 @@ class EditPlansContent extends StatefulWidget {
 class _EditPlansContentState extends State<EditPlansContent> {
   List<Map<String, dynamic>> _plans = [];
   bool _isLoading = false;
-  final PlanService _planService = PlanService();
 
   @override
   void initState() {
@@ -24,7 +23,7 @@ class _EditPlansContentState extends State<EditPlansContent> {
     setState(() => _isLoading = true);
     try {
       debugPrint('Plans loaded');
-      final plans = await _planService.getPlans();
+      final plans = await PlanService.getPlans();
       debugPrint('Loaded plans: $plans'); // Aquí deberías ver los datos
       if (!mounted) return;
       setState(() {
