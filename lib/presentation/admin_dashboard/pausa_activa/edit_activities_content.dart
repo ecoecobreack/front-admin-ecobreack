@@ -40,7 +40,6 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
         _isLoading = false;
       });
 
-      _updateSelectAllState();
       debugPrint('✅ Actividades cargadas: ${_activities.length}');
     } catch (e) {
       debugPrint('❌ Error cargando actividades: $e');
@@ -50,38 +49,6 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
         _isLoading = false;
       });
     }
-  }
-
-  void _updateSelectAllState() {
-    final filteredActivities = _getFilteredActivities();
-    if (filteredActivities.isEmpty) {
-      setState(() {
-        _selectAll = false;
-      });
-      return;
-    }
-
-    final filteredIds =
-        filteredActivities
-            .map((e) => e['id'] as String? ?? '')
-            .where((id) => id.isNotEmpty)
-            .toSet();
-    setState(() {
-      _selectAll =
-          filteredIds.isNotEmpty &&
-          filteredIds.every((id) => _selectedActivities.contains(id));
-    });
-  }
-
-  List<Map<String, dynamic>> _getFilteredActivities() {
-    return _activities.where((activity) {
-      final nombre = activity['nombre']?.toString() ?? '';
-      final category = activity['category']?.toString() ?? '';
-      final query = _searchQuery.toLowerCase();
-
-      return nombre.toLowerCase().contains(query) ||
-          category.toLowerCase().contains(query);
-    }).toList();
   }
 
   Future<void> _deleteSelectedActivities() async {
@@ -125,7 +92,6 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
             backgroundColor: Colors.green,
           ),
         );
-
         setState(() {
           _selectedActivities.clear();
           _selectAll = false;
@@ -164,11 +130,22 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
       );
     }
 
-    final filteredActivities = _getFilteredActivities();
+    final filteredActivities =
+        _activities
+            .where(
+              (activity) =>
+                  activity['nombre'].toString().toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ) ||
+                  activity['category'].toString().toLowerCase().contains(
+                    _searchQuery.toLowerCase(),
+                  ),
+            )
+            .toList();
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white, // Cambiado a fondo blanco
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -180,9 +157,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(
-                    0xFF0067AC,
-                  ).withOpacity(0.06), // Cambiado withAlpha por withOpacity
+                  color: const Color(0xFF0067AC).withAlpha(15),
                   blurRadius: 20,
                 ),
               ],
@@ -202,12 +177,10 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    if (filteredActivities.isNotEmpty) ...[
+                    if (_activities.isNotEmpty) ...[
                       Container(
                         decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF0067AC,
-                          ).withOpacity(0.04), // Cambiado
+                          color: const Color(0xFF0067AC).withAlpha(10),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -219,19 +192,12 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                                 setState(() {
                                   _selectAll = value ?? false;
                                   if (_selectAll) {
-                                    for (final activity in filteredActivities) {
-                                      final id =
-                                          activity['id'] as String? ?? '';
-                                      if (id.isNotEmpty) {
-                                        _selectedActivities.add(id);
-                                      }
-                                    }
+                                    _selectedActivities =
+                                        _activities
+                                            .map((e) => e['id'] as String)
+                                            .toSet();
                                   } else {
-                                    for (final activity in filteredActivities) {
-                                      _selectedActivities.remove(
-                                        activity['id'],
-                                      );
-                                    }
+                                    _selectedActivities.clear();
                                   }
                                 });
                               },
@@ -258,7 +224,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.red.withOpacity(0.2), // Cambiado
+                              color: Colors.red.withAlpha(50),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -290,19 +256,15 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(
-                              0xFF0067AC,
-                            ).withOpacity(0.08), // Cambiado
+                            color: const Color(0xFF0067AC).withAlpha(20),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
                         ],
                       ),
                       child: TextField(
-                        onChanged: (value) {
-                          setState(() => _searchQuery = value);
-                          _updateSelectAllState();
-                        },
+                        onChanged:
+                            (value) => setState(() => _searchQuery = value),
                         decoration: InputDecoration(
                           hintText: 'Buscar actividad...',
                           hintStyle: TextStyle(
@@ -311,9 +273,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                           ),
                           prefixIcon: Icon(
                             Icons.search,
-                            color: const Color(
-                              0xFF0067AC,
-                            ).withOpacity(0.6), // Cambiado
+                            color: const Color(0xFF0067AC).withAlpha(150),
                           ),
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(
@@ -345,8 +305,9 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                       itemCount: filteredActivities.length,
                       itemBuilder: (context, index) {
                         final activity = filteredActivities[index];
-                        final id = activity['id'] as String? ?? '';
-                        final isSelected = _selectedActivities.contains(id);
+                        final isSelected = _selectedActivities.contains(
+                          activity['id'],
+                        );
                         return _buildActivityCard(activity, isSelected);
                       },
                     ),
@@ -364,7 +325,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
           Icon(
             Icons.folder_open,
             size: 64,
-            color: const Color(0xFF0067AC).withOpacity(0.4), // Cambiado
+            color: const Color(0xFF0067AC).withAlpha(100),
           ),
           const SizedBox(height: 16),
           const Text(
@@ -386,57 +347,61 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   }
 
   Widget _buildActivityCard(Map<String, dynamic> activity, bool isSelected) {
-    // Definir colores por categoría con validación
-    Color getCardColor(String? category) {
-      if (category == null) return const Color(0xFF4CAF50);
-
+    // Definir colores por categoría
+    Color getCardColor(String category) {
+      // recortar "Icons."
       switch (category) {
         case 'Icons.visibility':
-          return const Color(0xFF4FC3F7);
+          return const Color(0xFF4FC3F7); // Azul claro (Visual)
         case 'Icons.hearing':
-          return const Color(0xFF9575CD);
+          return const Color(0xFF9575CD); // Morado (Auditiva)
         case 'Icons.psychology':
-          return const Color(0xFFFFB74D);
+          return const Color(0xFFFFB74D); // Naranja (Cognitiva)
         case 'Icons.accessibility_new':
-          return const Color(0xFF1976D2);
+          return const Color(0xFF1976D2); // Azul fuerte (Tren Superior)
         case 'Icons.directions_walk':
-          return const Color(0xFFC6DA23);
+          return const Color(0xFFC6DA23); // Verde claro (Tren Inferior)
         case 'Icons.self_improvement':
-          return const Color(0xFF26C6DA);
+          return const Color(0xFF26C6DA); // Turquesa (Movilidad Articular)
         case 'Icons.directions_run':
-          return const Color(0xFFFF8A65);
+          return const Color(
+            0xFFFF8A65,
+          ); // Naranja suave (Estiramientos Generales)
         default:
-          return const Color(0xFF4CAF50);
+          break;
       }
+
+      return const Color(0xFF4CAF50); // Cambiado de withOpacity(0.1)
     }
 
-    final cardColor = getCardColor(activity['icono'] as String?);
-    const textColor = Colors.white;
+    Color getTextColor(String id) {
+      return const Color.fromARGB(255, 255, 255, 255);
+    }
 
-    // Validación segura del sensor
-    final sensorEnabledValue = activity['sensorEnabled'];
+    final cardColor = getCardColor(activity['icono']);
+    final textColor = getTextColor(activity['id']);
     final sensorEnabled =
-        sensorEnabledValue is bool
-            ? sensorEnabledValue
-            : sensorEnabledValue?.toString().toLowerCase() == 'true';
+        activity['sensorEnabled'] is bool
+            ? activity['sensorEnabled']
+            : activity['sensorEnabled'].toString().toLowerCase() == 'true';
 
     return Container(
       decoration: BoxDecoration(
         color:
             isSelected
-                ? cardColor.withOpacity(
-                  0.2,
-                ) // Cambiado withAlpha por withOpacity
-                : Colors.white,
+                ? cardColor.withAlpha(51)
+                : Colors.white, // Cambiado de withOpacity(0.2)
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color:
-              isSelected ? cardColor : Colors.grey.withOpacity(0.2), // Cambiado
+              isSelected
+                  ? textColor
+                  : Colors.grey.withAlpha(51), // Cambiado de withOpacity(0.2)
           width: isSelected ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: cardColor.withOpacity(0.1), // Cambiado
+            color: cardColor.withAlpha(26), // Cambiado de withOpacity(0.1)
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -458,205 +423,204 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: cardColor.withOpacity(0.2), // Cambiado
+                      color: cardColor.withAlpha(
+                        51,
+                      ), // Cambiado de withOpacity(0.2)
                       shape: BoxShape.circle,
                     ),
                   ),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: cardColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  _getCategoryIcon(
-                                    activity['icono'] as String? ?? '',
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              _getCategoryIcon(activity['icono']),
+                              color: textColor,
+                              size: 38,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  activity['nombre'],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      143,
+                                      143,
+                                      143,
+                                    ),
                                   ),
-                                  color: textColor,
-                                  size: 38,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: cardColor,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    sensorEnabled
+                                        ? 'Requiere sensor'
+                                        : 'Sin sensor',
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 18,
+                      ), // Espacio entre el row superior y la descripción
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            activity['descripcion'] ?? '',
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 143, 143, 143),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Mostrar pasos si existen
+                      if (activity['pasos'] != null &&
+                          activity['pasos'] is List &&
+                          (activity['pasos'] as List).isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15.0, left: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Pasos:',
+                                style: TextStyle(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    143,
+                                    143,
+                                    143,
+                                  ),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      activity['nombre']?.toString() ??
-                                          'Sin nombre',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color.fromARGB(
+                              const SizedBox(height: 4),
+                              ...List<Widget>.from(
+                                (activity['pasos'] as List).map(
+                                  (step) => Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 8.0,
+                                      top: 4.0,
+                                    ),
+                                    child: Text(
+                                      '- $step',
+                                      style: TextStyle(
+                                        color: const Color.fromARGB(
                                           255,
                                           143,
                                           143,
                                           143,
                                         ),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: cardColor,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        sensorEnabled
-                                            ? 'Requiere sensor'
-                                            : 'Sin sensor',
-                                        style: const TextStyle(
-                                          color: textColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                        ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             child: Text(
-                              activity['descripcion']?.toString() ?? '',
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 143, 143, 143),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
+                              ' ${activity['duracion']}s',
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
                               ),
                             ),
                           ),
-                          // Mostrar pasos si existen
-                          if (activity['pasos'] != null &&
-                              activity['pasos'] is List &&
-                              (activity['pasos'] as List).isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 15.0,
-                                left: 8.0,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Pasos:',
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 143, 143, 143),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  ...List<Widget>.from(
-                                    (activity['pasos'] as List).map(
-                                      (step) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                          top: 4.0,
-                                        ),
-                                        child: Text(
-                                          '- ${step?.toString() ?? ''}',
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(
-                                              255,
-                                              143,
-                                              143,
-                                              143,
-                                            ),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          const SizedBox(height: 16),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: cardColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${activity['duracion']?.toString() ?? '0'}s',
-                                  style: const TextStyle(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                onPressed: () => _editActivity(activity),
+                                color: cardColor,
                               ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, size: 20),
-                                    onPressed: () => _editActivity(activity),
-                                    color: cardColor,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, size: 20),
-                                    onPressed: () => _deleteActivity(activity),
-                                    color: Colors.red,
-                                  ),
-                                ],
+                              IconButton(
+                                icon: const Icon(Icons.delete, size: 20),
+                                onPressed: () => _deleteActivity(activity),
+                                color: Colors.red,
                               ),
                             ],
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Checkbox(
+                      value: isSelected,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value ?? false) {
+                            _selectedActivities.add(activity['id']);
+                          } else {
+                            _selectedActivities.remove(activity['id']);
+                          }
+                          _selectAll =
+                              _selectedActivities.length == _activities.length;
+                        });
+                      },
+                      activeColor: textColor,
                     ),
                   ),
-                ),
-                // Checkbox siempre visible
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Checkbox(
-                    value: isSelected,
-                    activeColor: const Color(0xFF0067AC),
-                    checkColor: Colors.white,
-                    onChanged: (value) {
-                      setState(() {
-                        final id = activity['id'] as String? ?? '';
-                        if (id.isNotEmpty) {
-                          if (value ?? false) {
-                            _selectedActivities.add(id);
-                          } else {
-                            _selectedActivities.remove(id);
-                          }
-                        }
-                      });
-                      _updateSelectAllState();
-                    },
-                  ),
-                ),
               ],
             ),
           ),
@@ -666,7 +630,8 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   }
 
   IconData _getCategoryIcon(String iconString) {
-    final iconName = iconString.split('.').lastOrNull ?? '';
+    // El string viene como "Icons.psychology", extraemos el nombre del icono
+    final iconName = iconString.split('.').last;
 
     switch (iconName) {
       case 'visibility':
@@ -689,71 +654,52 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
   }
 
   Future<void> _editActivity(Map<String, dynamic> activity) async {
-    try {
-      final result = await showDialog<bool>(
-        context: context,
-        builder: (context) => EditActivityDialog(activity: activity),
-      );
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => EditActivityDialog(activity: activity),
+    );
 
-      if (result == true) {
-        _loadActivities();
-      }
-    } catch (e) {
-      debugPrint('Error al abrir editor: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error al abrir editor: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+    if (result == true) {
+      _loadActivities(); // Recargar la lista después de editar
     }
   }
 
   Future<void> _deleteActivity(Map<String, dynamic> activity) async {
-    try {
-      final confirm = await showDialog<bool>(
-        context: context,
-        builder:
-            (context) => AlertDialog(
-              title: const Text('Confirmar eliminación'),
-              content: Text(
-                '¿Está seguro de eliminar la actividad "${activity['nombre']?.toString() ?? 'Sin nombre'}"?',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Cancelar'),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: const Text('Eliminar'),
-                ),
-              ],
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar eliminación'),
+            content: Text(
+              '¿Está seguro de eliminar la actividad "${activity['nombre']}"?',
             ),
-      );
-
-      if (confirm == true) {
-        final id = activity['id'] as String? ?? '';
-        if (id.isNotEmpty) {
-          await ActivityService.deleteActivity(id);
-          if (mounted) {
-            _selectedActivities.remove(id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('✅ Actividad eliminada exitosamente'),
-                backgroundColor: Colors.green,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
               ),
-            );
-            _loadActivities();
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Error al eliminar: $e');
-      if (mounted) {
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: const Text('Eliminar'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirm == true) {
+      try {
+        await ActivityService.deleteActivity(activity['id']);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Actividad eliminada exitosamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadActivities();
+      } catch (e) {
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('❌ Error: ${e.toString()}'),
