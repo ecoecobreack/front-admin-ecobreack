@@ -53,7 +53,7 @@ class ActivityService {
         'duracion': maxTime, // Using maxTime as duration
         'descripcion': description.trim(),
         'pasos': steps.map((step) => step.trim()).toList(),
-        'icono': "Icons.visibility",
+        'icono': icon,
         'videoUrl': videoUrl,
         'sensorEnabled': sensorEnabled,
         'idCategory': "xeL6ZXfHmLKtcvRSM8sE",

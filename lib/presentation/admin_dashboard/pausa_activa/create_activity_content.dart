@@ -132,6 +132,7 @@ class _CreateActivityContentState extends State<CreateActivityContent> {
         return;
       }
 
+
       final result = await ActivityService.createActivity(
         name: _nameController.text,
         description: _descriptionController.text,
