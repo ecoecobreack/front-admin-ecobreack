@@ -424,19 +424,19 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
       decoration: BoxDecoration(
         color:
             isSelected
-                ? cardColor.withOpacity(
-                  0.2,
-                ) // Cambiado withAlpha por withOpacity
-                : Colors.white,
+                ? cardColor.withAlpha(51)
+                : Colors.white, // Cambiado de withOpacity(0.2)
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color:
-              isSelected ? cardColor : Colors.grey.withOpacity(0.2), // Cambiado
+              isSelected
+                  ? textColor
+                  : Colors.grey.withAlpha(51), // Cambiado de withOpacity(0.2)
           width: isSelected ? 2 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: cardColor.withOpacity(0.1), // Cambiado
+            color: cardColor.withAlpha(26), // Cambiado de withOpacity(0.1)
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -458,204 +458,204 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
-                      color: cardColor.withOpacity(0.2), // Cambiado
+                      color: cardColor.withAlpha(
+                        51,
+                      ), // Cambiado de withOpacity(0.2)
                       shape: BoxShape.circle,
                     ),
                   ),
                 ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: cardColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Icon(
-                                  _getCategoryIcon(
-                                    activity['icono'] as String? ?? '',
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              _getCategoryIcon(activity['icono']),
+                              color: textColor,
+                              size: 38,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  activity['nombre'],
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color.fromARGB(
+                                      255,
+                                      143,
+                                      143,
+                                      143,
+                                    ),
                                   ),
-                                  color: textColor,
-                                  size: 38,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: cardColor,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    sensorEnabled
+                                        ? 'Requiere sensor'
+                                        : 'Sin sensor',
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 18,
+                      ), // Espacio entre el row superior y la descripción
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            activity['descripcion'] ?? '',
+                            style: TextStyle(
+                              color: const Color.fromARGB(255, 143, 143, 143),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Mostrar pasos si existen
+                      if (activity['pasos'] != null &&
+                          activity['pasos'] is List &&
+                          (activity['pasos'] as List).isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 15.0, left: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Pasos:',
+                                style: TextStyle(
+                                  color: const Color.fromARGB(
+                                    255,
+                                    143,
+                                    143,
+                                    143,
+                                  ),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
                                 ),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      activity['nombre']?.toString() ??
-                                          'Sin nombre',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color.fromARGB(
+                              const SizedBox(height: 4),
+                              ...List<Widget>.from(
+                                (activity['pasos'] as List).map(
+                                  (step) => Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 8.0,
+                                      top: 4.0,
+                                    ),
+                                    child: Text(
+                                      '- $step',
+                                      style: TextStyle(
+                                        color: const Color.fromARGB(
                                           255,
                                           143,
                                           143,
                                           143,
                                         ),
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 2,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: cardColor,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Text(
-                                        sensorEnabled
-                                            ? 'Requiere sensor'
-                                            : 'Sin sensor',
-                                        style: const TextStyle(
-                                          color: textColor,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        fontSize: 12,
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 18),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8.0),
+                        ),
+                      const Spacer(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cardColor,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             child: Text(
-                              activity['descripcion']?.toString() ?? '',
-                              style: const TextStyle(
-                                color: Color.fromARGB(255, 143, 143, 143),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w300,
+                              ' ${activity['duracion']}s',
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
                               ),
                             ),
                           ),
-                          // Mostrar pasos si existen
-                          if (activity['pasos'] != null &&
-                              activity['pasos'] is List &&
-                              (activity['pasos'] as List).isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 15.0,
-                                left: 8.0,
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Pasos:',
-                                    style: TextStyle(
-                                      color: Color.fromARGB(255, 143, 143, 143),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  ...List<Widget>.from(
-                                    (activity['pasos'] as List).map(
-                                      (step) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                          top: 4.0,
-                                        ),
-                                        child: Text(
-                                          '- ${step?.toString() ?? ''}',
-                                          style: const TextStyle(
-                                            color: Color.fromARGB(
-                                              255,
-                                              143,
-                                              143,
-                                              143,
-                                            ),
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          const SizedBox(height: 16),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: cardColor,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${activity['duracion']?.toString() ?? '0'}s',
-                                  style: const TextStyle(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                onPressed: () => _editActivity(activity),
+                                color: cardColor,
                               ),
-                              Row(
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, size: 20),
-                                    onPressed: () => _editActivity(activity),
-                                    color: cardColor,
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, size: 20),
-                                    onPressed: () => _deleteActivity(activity),
-                                    color: Colors.red,
-                                  ),
-                                ],
+                              IconButton(
+                                icon: const Icon(Icons.delete, size: 20),
+                                onPressed: () => _deleteActivity(activity),
+                                color: Colors.red,
                               ),
                             ],
                           ),
                         ],
                       ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Checkbox(
+                      value: isSelected,
+                      onChanged: (value) {
+                        setState(() {
+                          if (value ?? false) {
+                            _selectedActivities.add(activity['id']);
+                          } else {
+                            _selectedActivities.remove(activity['id']);
+                          }
+                          _selectAll =
+                              _selectedActivities.length == _activities.length;
+                        });
+                      },
+                      activeColor: textColor,
                     ),
                   ),
-                ),
-                // Checkbox siempre visible
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Checkbox(
-                    value: isSelected,
-                    activeColor: const Color(0xFF0067AC),
-                    checkColor: Colors.white,
-                    onChanged: (value) {
-                      setState(() {
-                        final id = activity['id'] as String? ?? '';
-                        if (id.isNotEmpty) {
-                          if (value ?? false) {
-                            _selectedActivities.add(id);
-                          } else {
-                            _selectedActivities.remove(id);
-                          }
-                        }
-                      });
-                    },
-                  ),
-                ),
               ],
             ),
           ),
