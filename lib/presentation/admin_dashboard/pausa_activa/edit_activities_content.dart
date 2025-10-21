@@ -464,11 +464,12 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                   ),
                 ),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Row(
                             children: [
                               Container(
@@ -631,6 +632,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                         ],
                       ),
                     ),
+                  ),
                 ),
                 // Checkbox siempre visible
                 Positioned(
@@ -651,7 +653,6 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                           }
                         }
                       });
-                      _updateSelectAllState();
                     },
                   ),
                 ),
