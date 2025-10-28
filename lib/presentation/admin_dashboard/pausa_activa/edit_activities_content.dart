@@ -202,53 +202,6 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    if (filteredActivities.isNotEmpty) ...[
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(
-                            0xFF0067AC,
-                          ).withOpacity(0.04), // Cambiado
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: _selectAll,
-                              activeColor: const Color(0xFF0067AC),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectAll = value ?? false;
-                                  if (_selectAll) {
-                                    for (final activity in filteredActivities) {
-                                      final id =
-                                          activity['id'] as String? ?? '';
-                                      if (id.isNotEmpty) {
-                                        _selectedActivities.add(id);
-                                      }
-                                    }
-                                  } else {
-                                    for (final activity in filteredActivities) {
-                                      _selectedActivities.remove(
-                                        activity['id'],
-                                      );
-                                    }
-                                  }
-                                });
-                              },
-                            ),
-                            const Text(
-                              'Seleccionar todo',
-                              style: TextStyle(
-                                color: Color(0xFF0067AC),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                    ],
                     if (_selectedActivities.isNotEmpty)
                       Container(
                         decoration: BoxDecoration(
@@ -528,6 +481,22 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                               ],
                             ),
                           ),
+                          // Botones de editar y borrar en la esquina superior derecha
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, size: 20),
+                                onPressed: () => _editActivity(activity),
+                                color: cardColor,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, size: 20),
+                                onPressed: () => _deleteActivity(activity),
+                                color: Colors.red,
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                       SizedBox(
@@ -547,7 +516,7 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                           ),
                         ),
                       ),
-                      // Mostrar pasos si existen
+                      // Mostrar pasos si existen (limitados y truncados)
                       if (activity['pasos'] != null &&
                           activity['pasos'] is List &&
                           (activity['pasos'] as List).isNotEmpty)
@@ -570,68 +539,67 @@ class _EditActivitiesContentState extends State<EditActivitiesContent> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              ...List<Widget>.from(
-                                (activity['pasos'] as List).map(
-                                  (step) => Padding(
-                                    padding: const EdgeInsets.only(
-                                      left: 8.0,
-                                      top: 4.0,
-                                    ),
-                                    child: Text(
-                                      '- $step',
-                                      style: TextStyle(
-                                        color: const Color.fromARGB(
-                                          255,
-                                          143,
-                                          143,
-                                          143,
-                                        ),
-                                        fontSize: 12,
+                              ...((activity['pasos'] as List)
+                                  .take(3)
+                                  .map(
+                                    (step) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        left: 8.0,
+                                        top: 4.0,
                                       ),
+                                      child: Text(
+                                        '- ${step.toString().length > 40 ? step.toString().substring(0, 40) + '...' : step.toString()}',
+                                        style: TextStyle(
+                                          color: const Color.fromARGB(
+                                            255,
+                                            143,
+                                            143,
+                                            143,
+                                          ),
+                                          fontSize: 12,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  )),
+                              if ((activity['pasos'] as List).length > 3)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    left: 8.0,
+                                    top: 2.0,
+                                  ),
+                                  child: Text(
+                                    '+${(activity['pasos'] as List).length - 3} más...',
+                                    style: const TextStyle(
+                                      color: Color.fromARGB(255, 143, 143, 143),
+                                      fontSize: 10,
+                                      fontStyle: FontStyle.italic,
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
                       const Spacer(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cardColor,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              ' ${activity['duracion']}s',
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.w500,
-                                fontSize: 12,
-                              ),
-                            ),
+                      // Solo duración en el footer
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cardColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          ' ${activity['duracion']}s',
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
                           ),
-                          Row(
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit, size: 20),
-                                onPressed: () => _editActivity(activity),
-                                color: cardColor,
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.delete, size: 20),
-                                onPressed: () => _deleteActivity(activity),
-                                color: Colors.red,
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
