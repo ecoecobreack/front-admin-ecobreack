@@ -431,209 +431,216 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Container(
-              width: 800,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(
-                      group['color'],
-                    ).withAlpha(26), // 0.1 * 255 ≈ 26
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxHeight = MediaQuery.of(context).size.height * 0.8;
+                return Container(
+                  width: 800,
+                  constraints: BoxConstraints(maxHeight: maxHeight),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(group['color']).withAlpha(26),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Color(
-                        group['color'],
-                      ).withAlpha(26), // 0.1 * 255 ≈ 26
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.group,
-                          color: Color(group['color']),
-                          size: 32,
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Color(group['color']).withAlpha(26),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
                             children: [
-                              Text(
-                                group['name'],
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(group['color']),
-                                ),
+                              Icon(
+                                Icons.group,
+                                color: Color(group['color']),
+                                size: 32,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                group['description'],
-                                style: TextStyle(
-                                  color: Colors.grey[700],
-                                  fontSize: 14,
-                                  height: 1.4,
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      group['name'],
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(group['color']),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      group['description'],
+                                      style: TextStyle(
+                                        color: Colors.grey[700],
+                                        fontSize: 14,
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Miembros del Grupo',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(group['color']),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child:
+                              members != null && members.isNotEmpty
+                                  ? ListView.builder(
+                                    itemCount: membersCount,
+                                    itemBuilder: (context, index) {
+                                      final user = members[index];
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundColor: Color(
+                                            user['avatarColor'] as int? ??
+                                                0xFF0067AC,
+                                          ),
+                                          child: Text(
+                                            user['name'][0].toUpperCase(),
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        title: Text(user['name']),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(user['email']),
+                                            if (user['telefono'] != null &&
+                                                user['telefono']
+                                                    .toString()
+                                                    .isNotEmpty)
+                                              const SizedBox(height: 4),
+                                            Text(
+                                              'Teléfono: ${user['telefono']}',
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  )
+                                  : const Center(
+                                    child: Text(
+                                      'No hay miembros en este grupo.',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                        ),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Procesos Asignados',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(group['color']),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey.shade300),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child:
+                              plans.isEmpty
+                                  ? const Center(
+                                    child: Text(
+                                      'No hay procesos asignados',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  )
+                                  : ListView.builder(
+                                    itemCount: plans.length,
+                                    itemBuilder: (context, index) {
+                                      final plan = group['plans'][index];
+                                      return ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundColor: Color(
+                                            group['color'],
+                                          ),
+                                          child: Icon(
+                                            Icons.assignment,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        title: Text(plan['nombre']),
+                                        subtitle: Text(
+                                          plan['estado'] == true
+                                              ? 'Activo'
+                                              : 'Inactivo',
+                                        ),
+                                      );
+                                    },
+                                  ),
+                        ),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 2,
+                              ),
+                              child: const Text(
+                                'Cerrar',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Miembros del Grupo',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(group['color']),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child:
-                        members != null && members.isNotEmpty
-                            ? ListView.builder(
-                              itemCount: membersCount,
-                              itemBuilder: (context, index) {
-                                final user = members[index];
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Color(
-                                      user['avatarColor'] as int? ?? 0xFF0067AC,
-                                    ),
-                                    child: Text(
-                                      user['name'][0].toUpperCase(),
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                  title: Text(user['name']),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(user['email']),
-                                      if (user['telefono'] != null &&
-                                          user['telefono']
-                                              .toString()
-                                              .isNotEmpty)
-                                        const SizedBox(height: 4),
-                                      Text(
-                                        'Teléfono: ${user['telefono']}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            )
-                            : const Center(
-                              child: Text(
-                                'No hay miembros en este grupo.',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Procesos Asignados',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(group['color']),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child:
-                        plans.isEmpty
-                            ? const Center(
-                              child: Text(
-                                'No hay procesos asignados',
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            )
-                            : ListView.builder(
-                              itemCount: plans.length,
-                              itemBuilder: (context, index) {
-                                final plan = group['plans'][index];
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundColor: Color(group['color']),
-                                    child: Icon(
-                                      Icons.assignment,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  title: Text(plan['nombre']),
-                                  subtitle: Text(
-                                    plan['estado'] == true
-                                        ? 'Activo'
-                                        : 'Inactivo',
-                                  ),
-                                );
-                              },
-                            ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          'Cerrar',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
     );
