@@ -504,11 +504,7 @@ class _HistoryContentState extends State<HistoryContent> {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.file_download, color: primaryColor),
-                    onPressed: _exportData,
-                    tooltip: 'Exportar datos',
-                  ),
+                  // Botón de descargar eliminado
                   Icon(
                     _isTableExpanded ? Icons.expand_less : Icons.expand_more,
                     color: primaryColor,

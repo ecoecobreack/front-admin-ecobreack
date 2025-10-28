@@ -898,278 +898,292 @@ class _ProcessGroupsContentState extends State<ProcessGroupsContent> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
-            child: Container(
-              width: 700,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: _selectedColor.withAlpha(26),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: _selectedColor.withAlpha(26),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(Icons.edit, color: _selectedColor),
-                      ),
-                      const SizedBox(width: 16),
-                      Text(
-                        'Editar Grupo',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: _selectedColor,
-                        ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxHeight = MediaQuery.of(context).size.height * 0.8;
+                return Container(
+                  width: 700,
+                  constraints: BoxConstraints(maxHeight: maxHeight),
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _selectedColor.withAlpha(26),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Form(
-                    key: _formKey,
+                  child: SingleChildScrollView(
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildFormLabel('Nombre del Grupo'),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _groupNameController,
-                          decoration: _buildInputDecoration(
-                            'Ingrese el nombre del grupo',
-                          ),
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true
-                                      ? 'El nombre es requerido'
-                                      : null,
-                        ),
-                        const SizedBox(height: 16),
-                        _buildFormLabel('Descripción'),
-                        const SizedBox(height: 8),
-                        TextFormField(
-                          controller: _descriptionController,
-                          decoration: _buildInputDecoration(
-                            'Ingrese una descripción',
-                          ),
-                          maxLines: 3,
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true
-                                      ? 'La descripción es requerida'
-                                      : null,
-                        ),
-                        const SizedBox(height: 24),
-                        _buildFormLabel('Color del Grupo'),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          onTap: _showColorPicker,
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: _selectedColor.withAlpha(26),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: _selectedColor),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: _selectedColor.withAlpha(26),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(Icons.edit, color: _selectedColor),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.palette, color: _selectedColor),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Cambiar Color',
-                                  style: TextStyle(
-                                    color: _selectedColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        _buildFormLabel('Procesos Asignados'),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child:
-                              plans.isEmpty
-                                  ? const Center(
-                                    child: Text(
-                                      'No hay procesos asignados',
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  )
-                                  : ListView.builder(
-                                    itemCount: plans.length,
-                                    itemBuilder: (context, index) {
-                                      final plan = plans[index];
-                                      final isMarkedForDelete = _plansToDelete
-                                          .contains(plan['id']);
-                                      return ListTile(
-                                        leading: Icon(
-                                          Icons.assignment,
-                                          color: Colors.grey[700],
-                                        ),
-                                        title: Text(plan['nombre'] ?? ''),
-                                        subtitle: Text(
-                                          plan['estado'] == true
-                                              ? 'Activo'
-                                              : 'Inactivo',
-                                        ),
-                                        trailing: IconButton(
-                                          icon: Icon(
-                                            isMarkedForDelete
-                                                ? Icons.delete_forever
-                                                : Icons.delete,
-                                            color:
-                                                isMarkedForDelete
-                                                    ? Colors.red
-                                                    : Colors.grey,
-                                          ),
-                                          tooltip:
-                                              isMarkedForDelete
-                                                  ? 'Desmarcar para eliminar'
-                                                  : 'Eliminar plan',
-                                          onPressed: () {
-                                            if (isMarkedForDelete) {
-                                              _plansToDelete.remove(plan['id']);
-                                            } else {
-                                              _plansToDelete.add(plan['id']);
-                                            }
-                                            // Forzar rebuild del dialog
-                                            (context as Element)
-                                                .markNeedsBuild();
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
-                        ),
-                        if (_plansToDelete.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              'Planes marcados para eliminar: ${_plansToDelete.join(", ")}',
-                              style: const TextStyle(
-                                color: Colors.red,
-                                fontSize: 13,
+                            const SizedBox(width: 16),
+                            Text(
+                              'Editar Grupo',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: _selectedColor,
                               ),
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildFormLabel('Nombre del Grupo'),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _groupNameController,
+                                decoration: _buildInputDecoration(
+                                  'Ingrese el nombre del grupo',
+                                ),
+                                validator:
+                                    (value) =>
+                                        value?.isEmpty ?? true
+                                            ? 'El nombre es requerido'
+                                            : null,
+                              ),
+                              const SizedBox(height: 16),
+                              _buildFormLabel('Descripción'),
+                              const SizedBox(height: 8),
+                              TextFormField(
+                                controller: _descriptionController,
+                                decoration: _buildInputDecoration(
+                                  'Ingrese una descripción',
+                                ),
+                                maxLines: 3,
+                                validator:
+                                    (value) =>
+                                        value?.isEmpty ?? true
+                                            ? 'La descripción es requerida'
+                                            : null,
+                              ),
+                              const SizedBox(height: 24),
+                              _buildFormLabel('Color del Grupo'),
+                              const SizedBox(height: 8),
+                              InkWell(
+                                onTap: _showColorPicker,
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: _selectedColor.withAlpha(26),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: _selectedColor),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.palette,
+                                        color: _selectedColor,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Cambiar Color',
+                                        style: TextStyle(
+                                          color: _selectedColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              _buildFormLabel('Procesos Asignados'),
+                              const SizedBox(height: 8),
+                              Container(
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child:
+                                    plans.isEmpty
+                                        ? const Center(
+                                          child: Text(
+                                            'No hay procesos asignados',
+                                            style: TextStyle(
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                        )
+                                        : ListView.builder(
+                                          itemCount: plans.length,
+                                          itemBuilder: (context, index) {
+                                            final plan = plans[index];
+                                            final isMarkedForDelete =
+                                                _plansToDelete.contains(
+                                                  plan['id'],
+                                                );
+                                            return ListTile(
+                                              leading: Icon(
+                                                Icons.assignment,
+                                                color: Colors.grey[700],
+                                              ),
+                                              title: Text(plan['nombre'] ?? ''),
+                                              subtitle: Text(
+                                                plan['estado'] == true
+                                                    ? 'Activo'
+                                                    : 'Inactivo',
+                                              ),
+                                              trailing: IconButton(
+                                                icon: Icon(
+                                                  isMarkedForDelete
+                                                      ? Icons.delete_forever
+                                                      : Icons.delete,
+                                                  color:
+                                                      isMarkedForDelete
+                                                          ? Colors.red
+                                                          : Colors.grey,
+                                                ),
+                                                tooltip:
+                                                    isMarkedForDelete
+                                                        ? 'Desmarcar para eliminar'
+                                                        : 'Eliminar plan',
+                                                onPressed: () {
+                                                  if (isMarkedForDelete) {
+                                                    _plansToDelete.remove(
+                                                      plan['id'],
+                                                    );
+                                                  } else {
+                                                    _plansToDelete.add(
+                                                      plan['id'],
+                                                    );
+                                                  }
+                                                  (context as Element)
+                                                      .markNeedsBuild();
+                                                },
+                                              ),
+                                            );
+                                          },
+                                        ),
+                              ),
+                              if (_plansToDelete.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Text(
+                                    'Planes marcados para eliminar: ${_plansToDelete.join(", ")}',
+                                    style: const TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
+                        ),
+                        const SizedBox(height: 32),
+                        Wrap(
+                          alignment: WrapAlignment.end,
+                          spacing: 16,
+                          runSpacing: 8,
+                          children: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (_formKey.currentState!.validate()) {
+                                  try {
+                                    final updatedGroup = {
+                                      'id': group['id'],
+                                      'name': _groupNameController.text,
+                                      'description':
+                                          _descriptionController.text,
+                                      'color': _selectedColor.value,
+                                      'plans': group['plans'],
+                                    };
+                                    if (_plansToDelete.isNotEmpty) {
+                                      await _groupService.deletePlans(
+                                        _plansToDelete,
+                                        group['id'],
+                                      );
+                                    }
+                                    debugPrint(
+                                      '🔄 Actualizando grupo: $updatedGroup',
+                                    );
+                                    final result = await _groupService
+                                        .updateGroup(updatedGroup);
+                                    if (!mounted) return;
+                                    setState(() {
+                                      final index = _groups.indexWhere(
+                                        (g) => g['id'] == group['id'],
+                                      );
+                                      if (index != -1) {
+                                        _groups[index] = result;
+                                      }
+                                    });
+                                    if (!mounted) return;
+                                    if (!context.mounted) return;
+                                    Navigator.pop(context);
+                                    _showSnackBar(
+                                      'Grupo actualizado exitosamente',
+                                    );
+                                  } catch (e) {
+                                    if (!mounted) return;
+                                    if (!context.mounted) return;
+                                    _showSnackBar(
+                                      'Error al actualizar grupo: $e',
+                                      isError: true,
+                                    );
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _selectedColor,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: const Text('Guardar Cambios'),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Cancelar'),
-                      ),
-                      const SizedBox(width: 16),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            try {
-                              final updatedGroup = {
-                                'id': group['id'],
-                                'name': _groupNameController.text,
-                                'description': _descriptionController.text,
-                                'color':
-                                    _selectedColor.value, // Guardar como int
-                                'plans': group['plans'],
-                              };
-
-                              // Eliminar planes marcados
-
-                              if (_plansToDelete.isNotEmpty) {
-                                await _groupService.deletePlans(
-                                  _plansToDelete,
-                                  group['id'],
-                                );
-                              }
-
-                              debugPrint(
-                                '🔄 Actualizando grupo: $updatedGroup',
-                              );
-
-                              final result = await _groupService.updateGroup(
-                                updatedGroup,
-                              );
-
-                              if (!mounted) return;
-
-                              setState(() {
-                                final index = _groups.indexWhere(
-                                  (g) => g['id'] == group['id'],
-                                );
-                                if (index != -1) {
-                                  _groups[index] = result;
-                                }
-                              });
-
-                              if (!mounted) return;
-                              if (!context.mounted) return;
-                              Navigator.pop(context);
-                              _showSnackBar('Grupo actualizado exitosamente');
-                            } catch (e) {
-                              if (!mounted) return;
-                              if (!context.mounted) return;
-                              _showSnackBar(
-                                'Error al actualizar grupo: $e',
-                                isError: true,
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _selectedColor,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text('Guardar Cambios'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                );
+              },
             ),
           ),
     );
